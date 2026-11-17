@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ekspedisi Nalar: Misi Detektif Teks Eksposisi</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tone.js untuk Efek Suara Sintetis (Tanpa URL Eksternal) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            nalar: {
+              dark: '#090d16',
+              panel: '#111827',
+              card: '#1a2333',
+              border: '#2a364f',
+              accent: '#10b981',
+              amber: '#f59e0b',
+              cyan: '#06b6d4',
+              rose: '#f43f5e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ==========================================================================
+       CUSTOM CSS UNTUK ESTETIKA GAME DETEKTIF, ANIMASI & MODE CETAK (PRINT)
+       ========================================================================== */
+    body {
+      background-color: #090d16;
+      color: #f1f5f9;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      overflow-x: hidden;
+    }
+
+    /* Efek Tombol Game Taktil */
+    .btn-game {
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
+    }
+    .btn-game:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+    .btn-game:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    /* Animasi Mengambang & Denyut Halus */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: floatSlow 3.5s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.18); opacity: 1; }
+    }
+    .animate-breathe {
+      animation: breathe 4.5s ease-in-out infinite;
+    }
+
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    .animate-shake {
+      animation: shakeError 0.4s ease-in-out;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.92) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Gaya Drag and Drop */
+    .draggable-card {
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .draggable-card:active {
+      cursor: grabbing;
+    }
+    .draggable-card.selected-card {
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35);
+      transform: translateY(-3px);
+    }
+    .drop-zone {
+      transition: all 0.2s ease;
+    }
+    .drop-zone.drag-over {
+      border-color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.14) !important;
+      transform: scale(1.01);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* ==========================================================================
+       ATURAN CETAK (@media print) AGAR RAPOR DETEKTIF RAPI DI KERTAS A4 / PDF
+       ========================================================================== */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        background-image: none !important;
+        font-size: 11pt;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only-block {
+        display: block !important;
+      }
+      .print-card {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1.5px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+        page-break-inside: avoid;
+      }
+      .print-text-dark {
+        color: #0f172a !important;
+      }
+      .print-text-muted {
+        color: #475569 !important;
+      }
+      .print-bg-light {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- ========================================================================
+       HEADER / HUD NAVIGASI UTAMA (ENERGI NALAR, SKOR, LENCANA, PETA LEVEL)
+       ======================================================================== -->
+  <header id="main-hud" class="no-print sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/90 px-3 sm:px-6 py-3">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Identitas Brand & Peran -->
+      <div class="flex items-center gap-3">
+        <button onclick="navigateTo('intro')" class="flex items-center gap-2.5 text-left group focus:outline-none">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-950/50 border border-emerald-400/30 group-hover:scale-105 transition">
+            <!-- Ikon Kaca Pembesar & Sirkuit Nalar SVG -->
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path stroke-linecap="round" d="M20 20l-3.5-3.5M8 11h6M11 8v6"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">EKSPEDISI NALAR</span>
+              <span class="hidden md:inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Kelas X SMA/SMK</span>
+            </div>
+            <p class="text-xs text-slate-400 truncate max-w-[180px] sm:max-w-xs" id="hud-agent-name">Analis Muda: Belum Terdaftar</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- Navigasi Level Cepat (Stepper) -->
+      <nav aria-label="Peta Level" class="order-3 lg:order-2 w-full lg:w-auto flex items-center justify-center gap-1.5 sm:gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800/80">
+        <button onclick="jumpToLevel(1)" id="nav-lvl-1" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition border border-slate-700">
+          <span class="w-4 h-4 rounded-full bg-slate-700 text-[10px] flex items-center justify-center font-mono">1</span>
+          <span>Struktur</span>
+        </button>
+        <span class="text-slate-600 text-xs">➔</span>
+        <button onclick="jumpToLevel(2)" id="nav-lvl-2" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition border border-slate-700">
+          <span class="w-4 h-4 rounded-full bg-slate-700 text-[10px] flex items-center justify-center font-mono">2</span>
+          <span>Fakta/Opini</span>
+        </button>
+        <span class="text-slate-600 text-xs">➔</span>
+        <button onclick="jumpToLevel(3)" id="nav-lvl-3" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition border border-slate-700">
+          <span class="w-4 h-4 rounded-full bg-slate-700 text-[10px] flex items-center justify-center font-mono">3</span>
+          <span>Aksi Nyata</span>
+        </button>
+        <span class="text-slate-600 text-xs">➔</span>
+        <button onclick="navigateTo('report')" id="nav-report" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-slate-800/80 text-amber-300 hover:bg-slate-700 transition border border-amber-500/30">
+          <span>📋 Rapor</span>
+        </button>
+      </nav>
+
+      <!-- Statistik Gamifikasi: Energi Nalar, Skor, Lencana & Audio -->
+      <div class="order-2 lg:order-3 flex items-center gap-2 sm:gap-3">
+        <!-- Energi Nalar (Nyawa) -->
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-xl" title="Energi Nalar (Ketahanan Analisis)">
+          <div id="energy-icons" class="flex items-center gap-0.5 text-amber-400">
+            <!-- Diisi dinamis via JS -->
+          </div>
+          <span id="energy-text" class="text-xs font-mono font-bold text-slate-300 ml-0.5">5/5</span>
+        </div>
+
+        <!-- Skor Poin -->
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl" title="Skor Investigasi">
+          <span class="text-emerald-400 text-xs font-bold">SKOR</span>
+          <span id="hud-score" class="text-sm font-mono font-extrabold text-white">0</span>
+        </div>
+
+        <!-- Koleksi Lencana Mini -->
+        <button onclick="toggleBadgeDrawer()" class="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-2.5 py-1.5 rounded-xl transition" title="Lihat Lencana Pencapaian">
+          <span class="text-sm">🏅</span>
+          <span id="hud-badge-count" class="text-xs font-mono font-bold text-amber-400">0/3</span>
+        </button>
+
+        <!-- Tombol Suara -->
+        <button onclick="toggleSound()" id="btn-sound" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition" title="Aktifkan/Matikan Efek Suara">
+          <svg id="icon-sound-on" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"></path>
+          </svg>
+          <svg id="icon-sound-off" class="w-4 h-4 text-slate-500 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       BANNER PESAN / NOTIFIKASI NON-BLOCKING (PENGGANTI ALERT)
+       ======================================================================== -->
+  <div id="toast-container" class="no-print fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-[calc(100%-2.5rem)] pointer-events-none"></div>
+
+  <!-- ========================================================================
+       MODAL LENCANA PENCAPAIAN (JOYFUL LEARNING)
+       ======================================================================== -->
+  <div id="badge-modal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-pop">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <span>🏅</span> Lemari Lencana Analis Muda
+        </h3>
+        <button onclick="toggleBadgeDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+      </div>
+      <div class="space-y-3" id="badge-list-container">
+        <!-- Diisi via JS -->
+      </div>
+      <button onclick="toggleBadgeDrawer()" class="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-white transition">
+        Tutup Lemari Lencana
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL KALIBRASI ENERGI NALAR (JIKA ENERGI HABIS AGAR SISWA TETAP BISA BELAJAR)
+       ======================================================================== -->
+  <div id="energy-modal" class="no-print fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-pop">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
+        ⚡
+      </div>
+      <h3 class="text-xl font-extrabold text-white mb-2">Energi Nalar Menipis!</h3>
+      <p class="text-sm text-slate-300 leading-relaxed mb-5">
+        Detektif yang hebat tidak menyerah saat menemui kekeliruan. Tarik napas sejenak, baca kembali petunjuk teks dengan saksama, dan pulihkan Energi Nalarmu untuk melanjutkan investigasi!
+      </p>
+      <button onclick="rechargeEnergy()" class="btn-game w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-sm">
+        ⚡ Pulihkan Energi Nalar (+3 Energi)
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       KONTEN UTAMA APLIKASI (SPA VIEWS)
+       ======================================================================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <!-- ======================================================================
+         VIEW 0: HALAMAN PEMBUKA & PENDAFTARAN ANALIS MUDA
+         ====================================================================== -->
+    <section id="view-intro" class="animate-pop">
+      <div class="grid lg:grid-cols-12 gap-6 items-center">
+        
+        <!-- Kolom Kiri: Narasi Misi & Tujuan Pembelajaran -->
+        <div class="lg:col-span-7 space-y-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Misi Interaktif Bahasa Indonesia • Kelas X SMA/SMK</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            Ekspedisi Nalar: <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">Misi Detektif Teks Eksposisi</span>
+          </h1>
+
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            Selamat datang di Markas Pusat Literasi Kritis! Kamu bertugas sebagai <strong class="text-white">Analis Muda</strong> untuk membedah pidato dan artikel krisis sosial-lingkungan. Tugasmu adalah memisahkan fakta dari opini serta menguji kekuatan argumen demi menyelamatkan masyarakat dari misinformasi dan kerusakan alam.
+          </p>
+
+          <!-- Kartu Tujuan Pembelajaran & Pilar Deep Learning -->
+          <div class="grid sm:grid-cols-2 gap-3 pt-1">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
+              <div class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <span>🎯</span> Tujuan Pembelajaran
+              </div>
+              <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                <li>Mengidentifikasi <strong>tesis</strong>, <strong>argumen</strong>, dan <strong>rekomendasi</strong> dalam teks eksposisi.</li>
+                <li>Membedakan kalimat <strong>fakta</strong> dan <strong>opini</strong> secara kritis dan akurat.</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
+              <div class="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <span>🧠</span> 3 Pilar Deep Learning
+              </div>
+              <ul class="text-xs text-slate-300 space-y-1.5">
+                <li><strong class="text-amber-400">Joyful:</strong> Skor, Energi Nalar & Lencana Detektif.</li>
+                <li><strong class="text-cyan-400">Mindful:</strong> Jeda Refleksi metakognitif antarlevel.</li>
+                <li><strong class="text-emerald-400">Meaningful:</strong> Solusi nyata masalah lingkungan sekitar.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Kartu Identitas Detektif & Mulai Misi -->
+        <div class="lg:col-span-5">
+          <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+            
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl animate-float">
+                🕵️‍♂️
+              </div>
+              <div>
+                <h2 class="text-lg font-extrabold text-white">Kartu Identitas Analis</h2>
+                <p class="text-xs text-slate-400">Isi data dirimu untuk Rapor Hasil Belajar</p>
+              </div>
+            </div>
+
+            <form id="agent-form" onsubmit="startMission(event)" class="space-y-4">
+              <div>
+                <label for="input-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Lengkap Siswa <span class="text-rose-400">*</span></label>
+                <input type="text" id="input-name" required placeholder="Contoh: Raka Pratama" 
+                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="input-class" class="block text-xs font-semibold text-slate-300 mb-1.5">Kelas <span class="text-rose-400">*</span></label>
+                  <input type="text" id="input-class" required placeholder="Contoh: X-A / X TKJ 1" 
+                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition" />
+                </div>
+                <div>
+                  <label for="input-school" class="block text-xs font-semibold text-slate-300 mb-1.5">Sekolah (Opsional)</label>
+                  <input type="text" id="input-school" placeholder="Contoh: SMAN 1 Nusantara" 
+                    class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-game w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 mt-2">
+                <span>🚀 Mulai Ekspedisi dari Level 1</span>
+              </button>
+            </form>
+
+            <!-- Opsi Pilih Level Langsung -->
+            <div class="mt-6 pt-5 border-t border-slate-800">
+              <p class="text-xs text-slate-400 text-center mb-3">Atau pilih langsung misi investigasi:</p>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="quickJump(1)" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-center transition">
+                  <div class="text-xs font-bold text-emerald-400">Level 1</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Bedah Pidato</div>
+                </button>
+                <button onclick="quickJump(2)" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-center transition">
+                  <div class="text-xs font-bold text-cyan-400">Level 2</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Fakta vs Opini</div>
+                </button>
+                <button onclick="quickJump(3)" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-center transition">
+                  <div class="text-xs font-bold text-amber-400">Level 3</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Aksi Nyata</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         VIEW 1: LEVEL 1 — BEDAH PIDATO "BAHAYA NARKOBA BAGI GENERASI MUDA"
+         ====================================================================== -->
+    <section id="view-level-1" class="hidden animate-pop space-y-6">
+      <!-- Header Level 1 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-emerald-400 uppercase tracking-wider mb-1">
+            <span>MISI 01 • KLASIFIKASI STRUKTUR TEKS EKSPOSISI</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Bedah Pidato: "Bahaya Narkoba bagi Generasi Muda"</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Seret kartu pernyataan (atau <strong class="text-amber-300">ketuk kartu lalu ketuk kotak struktur</strong>) ke dalam 3 bagian teks eksposisi yang tepat.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <button onclick="toggleDossier('dossier-1')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-cyan-300 flex items-center gap-1.5 transition">
+            <span>📄</span> <span id="btn-dossier-1-text">Baca Naskah Pidato</span>
+          </button>
+          <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl text-center">
+            <div class="text-[10px] text-slate-400 uppercase">Terklarifikasi</div>
+            <div class="text-sm font-mono font-extrabold text-emerald-400"><span id="lvl1-progress">0</span>/9</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Naskah Bacaan Pidato (Bisa dibuka/tutup kapan saja) -->
+      <div id="dossier-1" class="hidden bg-slate-900 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">📂 Arsip Teks Pidato: Bahaya Narkoba bagi Generasi Muda</h3>
+          <button onclick="toggleDossier('dossier-1')" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Tutup ✕</button>
+        </div>
+        <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-64 overflow-y-auto pr-2">
+          <p><strong class="text-white">[Pembuka / Isu]</strong> Narkoba merupakan ancaman serius yang dapat menghancurkan masa depan generasi muda dan ketahanan bangsa Indonesia. Penyalahgunaan narkotika bukan sekadar pelanggaran hukum biasa, melainkan kejahatan luar biasa yang mengancam keberlangsungan negara. Generasi muda saat ini berada di persimpangan kritis: menjadi motor kemajuan bangsa atau terpuruk akibat jerat zat adiktif.</p>
+          <p><strong class="text-white">[Fakta & Bukti]</strong> Data Kementerian Hukum dan HAM mencatat dari total 158.812 narapidana dan tahanan di Indonesia, sebanyak 51.899 orang di antaranya tersandung kasus narkoba. Jumlah penyalah guna narkoba di Indonesia diperkirakan mencapai 7 juta orang, sebuah fenomena gunung es karena angka sebenarnya di lapangan jauh lebih besar. Selain merusak saraf dan masa depan individu, peredaran narkoba menimbulkan kerugian ekonomi triliunan rupiah serta memicu meningkatnya angka kriminalitas.</p>
+          <p><strong class="text-white">[Ajakan / Penutup]</strong> Oleh karena itu, generasi muda harus membentengi diri dengan tiga langkah utama: selektif memilih teman bergaul, meningkatkan keimanan dan ketakwaan, serta menabung kebaikan untuk masa depan. Bagi saudara-saudara kita yang telanjur terjerat penyalahgunaan narkoba, jangan ragu untuk segera melapor dan mengikuti program rehabilitasi medis maupun sosial. Mari kita satukan tekad di lingkungan sekolah dan keluarga untuk berani menolak segala bentuk tawaran narkoba demi menyelamatkan masa depan bangsa.</p>
+        </div>
+      </div>
+
+      <!-- Kotak Umpan Balik Edukatif Real-Time -->
+      <div id="lvl1-feedback" class="hidden rounded-2xl p-4 border text-xs sm:text-sm transition-all"></div>
+
+      <!-- Area Kartu Bukti yang Belum Ditempatkan -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <span>🗂️ Potongan Pernyataan Pidato (Pilih atau Seret)</span>
+          </h3>
+          <span id="lvl1-selected-hint" class="text-xs text-amber-400 font-medium hidden">Kartu dipilih! Ketuk salah satu kotak struktur di bawah ⬇</span>
+        </div>
+        <div id="lvl1-card-pool" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Kartu-kartu di-render melalui JavaScript -->
+        </div>
+      </div>
+
+      <!-- 3 Zona Drop Struktur Teks Eksposisi -->
+      <div class="grid lg:grid-cols-3 gap-4">
+        
+        <!-- Zona 1: TESIS -->
+        <div id="zone-tesis" data-category="tesis"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'tesis')"
+          onclick="handleZoneClick('tesis')"
+          class="drop-zone bg-slate-900 border-2 border-dashed border-emerald-500/40 rounded-2xl p-4 min-h-[240px] flex flex-col cursor-pointer hover:border-emerald-400">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400">Bagian 1</span>
+              <h4 class="text-base font-extrabold text-white mt-1">TESIS (Pendapat Utama)</h4>
+            </div>
+            <span class="text-xs font-mono text-slate-400" id="count-tesis">0/3</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Berisi sudut pandang, klaim, atau gagasan utama pembicara terhadap isu yang dibahas.</p>
+          <div id="list-tesis" class="space-y-2 flex-1"></div>
+        </div>
+
+        <!-- Zona 2: ARGUMEN -->
+        <div id="zone-argumen" data-category="argumen"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'argumen')"
+          onclick="handleZoneClick('argumen')"
+          class="drop-zone bg-slate-900 border-2 border-dashed border-cyan-500/40 rounded-2xl p-4 min-h-[240px] flex flex-col cursor-pointer hover:border-cyan-400">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-400">Bagian 2</span>
+              <h4 class="text-base font-extrabold text-white mt-1">ARGUMEN PENDUKUNG</h4>
+            </div>
+            <span class="text-xs font-mono text-slate-400" id="count-argumen">0/3</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Berisi alasan logis, data statistik, fakta, atau bukti empiris untuk memperkuat tesis.</p>
+          <div id="list-argumen" class="space-y-2 flex-1"></div>
+        </div>
+
+        <!-- Zona 3: REKOMENDASI -->
+        <div id="zone-rekomendasi" data-category="rekomendasi"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'rekomendasi')"
+          onclick="handleZoneClick('rekomendasi')"
+          class="drop-zone bg-slate-900 border-2 border-dashed border-amber-500/40 rounded-2xl p-4 min-h-[240px] flex flex-col cursor-pointer hover:border-amber-400">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/15 text-amber-400">Bagian 3</span>
+              <h4 class="text-base font-extrabold text-white mt-1">REKOMENDASI (Saran)</h4>
+            </div>
+            <span class="text-xs font-mono text-slate-400" id="count-rekomendasi">0/3</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Berisi penegasan ulang disertai saran, imbauan, atau ajakan tindakan konkret.</p>
+          <div id="list-rekomendasi" class="space-y-2 flex-1"></div>
+        </div>
+
+      </div>
+
+      <!-- Tombol Selesai Level 1 -->
+      <div id="lvl1-complete-bar" class="hidden bg-gradient-to-r from-emerald-950 to-teal-950 border border-emerald-500/50 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-pop">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">🏅</div>
+          <div>
+            <h4 class="text-base font-extrabold text-white">Struktur Pidato Terbedah Sempurna!</h4>
+            <p class="text-xs text-emerald-200">Lencana <strong class="text-amber-300">"Arsitek Struktur"</strong> telah ditambahkan ke profilmu.</p>
+          </div>
+        </div>
+        <button onclick="openReflection(1)" class="btn-game w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">
+          Lanjut ke Jeda Refleksi ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         VIEW REFLEKSI: JEDA REFLEKSI METAKOGNITIF (MINDFUL LEARNING)
+         ====================================================================== -->
+    <section id="view-reflection" class="hidden animate-pop max-w-2xl mx-auto py-4">
+      <div class="bg-slate-900 border border-cyan-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden">
+        <!-- Lingkaran Pernapasan Mindful -->
+        <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center animate-breathe">
+          <span class="text-3xl">🧘‍♂️</span>
+        </div>
+
+        <span class="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono uppercase tracking-wider mb-3">
+          Jeda Refleksi • Mindful Learning
+        </span>
+
+        <h2 class="text-2xl font-extrabold text-white mb-2" id="reflection-title">Tarik Napas Sejenak, Analis Muda</h2>
+        <p class="text-xs sm:text-sm text-slate-400 mb-6">
+          Sebelum melangkah ke tantangan berikutnya, mari sadari proses berpikir yang baru saja kamu lakukan.
+        </p>
+
+        <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 text-left mb-5">
+          <div class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Pertanyaan Metakognitif:</div>
+          <p id="reflection-question" class="text-sm sm:text-base font-semibold text-white leading-relaxed">
+            <!-- Diisi dinamis -->
+          </p>
+        </div>
+
+        <!-- Pilihan Strategi Berpikir + Catatan Singkat -->
+        <div class="text-left space-y-3 mb-6">
+          <label class="block text-xs font-semibold text-slate-300">Pilih strategi nalar yang paling kamu rasakan tadi:</label>
+          <div id="reflection-options" class="space-y-2">
+            <!-- Diisi dinamis -->
+          </div>
+
+          <div class="pt-2">
+            <label for="reflection-note" class="block text-xs font-semibold text-slate-400 mb-1">Catatan Kesadaranmu (Opsional):</label>
+            <input type="text" id="reflection-note" placeholder="Tuliskan satu hal baru yang kamu sadari..." 
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <button onclick="proceedFromReflection()" id="btn-reflection-next" class="btn-game w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-extrabold text-sm sm:text-base">
+          Saya Siap Melanjutkan Misi ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         VIEW 2: LEVEL 2 — INVESTIGASI FAKTA VS OPINI ("PEMBANGUNAN DAN BENCANA LINGKUNGAN")
+         ====================================================================== -->
+    <section id="view-level-2" class="hidden animate-pop space-y-6">
+      <!-- Header Level 2 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase tracking-wider mb-1">
+            <span>MISI 02 • SCANNER FAKTA VS OPINI & UJI NALAR KRITIS</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Investigasi: "Pembangunan dan Bencana Lingkungan"</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Uji ketajaman nalarmu membedakan data objektif dan opini penulis, lalu evaluasi efektivitas solusi lingkungan.
+          </p>
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button onclick="toggleDossier('dossier-2')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-cyan-300 flex items-center gap-1.5 transition">
+            <span>📄</span> <span>Baca Artikel</span>
+          </button>
+          <button onclick="toggleScannerTimerMode()" id="btn-timer-mode" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300 transition" title="Ubah mode waktu scanner">
+            ⏱️ Timer: Aktif
+          </button>
+        </div>
+      </div>
+
+      <!-- Arsip Bacaan Level 2 -->
+      <div id="dossier-2" class="hidden bg-slate-900 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">📂 Arsip Artikel: Pembangunan dan Bencana Lingkungan</h3>
+          <button onclick="toggleDossier('dossier-2')" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Tutup ✕</button>
+        </div>
+        <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-64 overflow-y-auto pr-2">
+          <p>Bumi saat ini sedang menghadapi berbagai masalah lingkungan yang serius. Sedikitnya terdapat <strong>enam masalah lingkungan utama</strong> yang dihadapi Indonesia, yakni pencemaran air, pencemaran udara, kerusakan hutan, abrasi pantai, kerusakan terumbu karang, serta persoalan sampah perkotaan.</p>
+          <p>Kerusakan hutan menjadi sorotan tajam karena laju penebangan hutan di Indonesia tercatat mencapai <strong>3.180.243 hektare</strong> atau setara dengan <strong>50 kali luas wilayah Jakarta</strong>. Akibatnya, sepanjang tahun <strong>2005 hingga 2006</strong> tercatat ratusan peristiwa bencana alam seperti banjir dan tanah longsor melanda berbagai daerah. Puncaknya, <strong>banjir besar yang melanda Jakarta pada Februari 2007</strong> disebabkan oleh buruknya sistem drainase serta menyusutnya daerah resapan air akibat pembangunan yang tidak terkendali.</p>
+          <p>Bencana lingkungan yang terjadi saat ini merupakan cerminan dari sikap manusia yang terlalu serakah dalam mengeksploitasi sumber daya alam. Pembangunan ekonomi yang mengabaikan kelestarian ekologi pada hakikatnya hanyalah bom waktu bagi generasi mendatang. Oleh karena itu, seharusnya pemerintah dan seluruh elemen masyarakat lebih tegas menerapkan konsep <strong>pembangunan berkelanjutan</strong> agar alam tidak terus dikorbankan.</p>
+        </div>
+      </div>
+
+      <!-- TAHAP 2A: SCANNER FAKTA VS OPINI -->
+      <div id="stage-2a" class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 rounded-full">
+            TAHAP 2A • PEMINDAI PERNYATAAN (<span id="scan-current">1</span>/8)
+          </span>
+          <div class="text-xs font-mono text-slate-400">
+            Akurasi: <span id="scan-accuracy" class="text-emerald-400 font-bold">100%</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar Waktu Scanner -->
+        <div id="scan-timer-wrapper" class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
+          <div id="scan-timer-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-200" style="width: 100%"></div>
+        </div>
+
+        <!-- Layar Pernyataan -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-6 min-h-[150px] flex flex-col justify-center relative">
+          <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">SAMPEL KALIMAT TERDETEKSI:</div>
+          <p id="scan-statement-text" class="text-base sm:text-xl font-bold text-white leading-relaxed">
+            <!-- Pernyataan di-render via JS -->
+          </p>
+        </div>
+
+        <!-- Kotak Feedback Scanner -->
+        <div id="scan-feedback" class="hidden rounded-2xl p-4 mb-5 border text-xs sm:text-sm"></div>
+
+        <!-- Tombol Pilihan FAKTA vs OPINI -->
+        <div id="scan-buttons" class="grid grid-cols-2 gap-4">
+          <button onclick="submitScanAnswer('fakta')" class="btn-game py-4 px-5 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 border border-emerald-400/40 text-white font-extrabold text-sm sm:text-base flex flex-col items-center gap-1">
+            <span class="text-xl">📊</span>
+            <span>FAKTA</span>
+            <span class="text-[11px] font-normal text-emerald-100">Data Terukur / Peristiwa Nyata</span>
+          </button>
+
+          <button onclick="submitScanAnswer('opini')" class="btn-game py-4 px-5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-300/40 text-slate-950 font-extrabold text-sm sm:text-base flex flex-col items-center gap-1">
+            <span class="text-xl">💭</span>
+            <span>OPINI</span>
+            <span class="text-[11px] font-medium text-slate-900">Penilaian / Saran Subjektif</span>
+          </button>
+        </div>
+
+        <!-- Tombol Lanjut ke Soal Berikutnya -->
+        <div id="scan-next-wrapper" class="hidden mt-4">
+          <button onclick="nextScanQuestion()" id="btn-scan-next" class="btn-game w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-sm">
+            Pindai Pernyataan Berikutnya ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- TAHAP 2B: UJI NALAR KRITIS (EVALUASI REKOMENDASI PENULIS) -->
+      <div id="stage-2b" class="hidden bg-slate-900 border border-amber-500/30 rounded-3xl p-5 sm:p-8 shadow-xl max-w-3xl mx-auto animate-pop">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono uppercase mb-4">
+          <span>TAHAP 2B • UJI NALAR KRITIS (HOTS)</span>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-extrabold text-white mb-2">Evaluasi Efektivitas Rekomendasi</h3>
+        <p class="text-xs sm:text-sm text-slate-300 bg-slate-950 border border-slate-800 p-4 rounded-2xl leading-relaxed mb-5">
+          "Menurut analisis teks <em>'Pembangunan dan Bencana Lingkungan'</em>, apakah rekomendasi penulis (penerapan pembangunan berkelanjutan dan pembenahan tata ruang) sudah efektif dilakukan di lapangan? Jelaskan alasanmu!"
+        </p>
+
+        <div class="space-y-3">
+          <label for="critical-answer-input" class="block text-xs font-semibold text-slate-300">Tuliskan Analisis Kritismu (Minimal 25 karakter):</label>
+          <textarea id="critical-answer-input" rows="4" placeholder="Contoh: Menurut analisis saya, rekomendasi tersebut belum efektif dilakukan karena laju penebangan hutan masih tinggi, daerah resapan air terus berkurang, dan bencana banjir masih berulang setiap tahun..."
+            class="w-full p-4 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition"></textarea>
+          
+          <button onclick="evaluateCriticalAnswer()" id="btn-submit-critical" class="btn-game w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-sm">
+            🔍 Kirim & Evaluasi Analisis Nalar
+          </button>
+        </div>
+
+        <!-- Hasil Evaluasi Kata Kunci & Contoh Pembanding Ideal -->
+        <div id="critical-feedback-box" class="hidden mt-6 space-y-4 animate-pop">
+          <div id="critical-score-banner" class="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 text-xs sm:text-sm"></div>
+
+          <div class="p-5 rounded-2xl bg-slate-950 border border-cyan-500/30">
+            <div class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <span>💡</span> Contoh Perbandingan Analisis Ideal:
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              "Rekomendasi penulis mengenai pembangunan berkelanjutan <strong>belum efektif dilaksanakan</strong> di lapangan. Hal ini terbukti dari masih tingginya angka penebangan hutan (mencapai 3,18 juta hektare), buruknya sistem drainase perkotaan, serta penyusutan daerah resapan air yang memicu berulangnya bencana banjir dan tanah longsor akibat lemahnya pengawasan dan kesadaran ekologis."
+            </p>
+          </div>
+
+          <button onclick="openReflection(2)" class="btn-game w-full py-3.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">
+            Lanjut ke Jeda Refleksi ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         VIEW 3: LEVEL 3 — SINTESIS & AKSI NYATA ("UPAYA MELESTARIKAN LINGKUNGAN HIDUP")
+         ====================================================================== -->
+    <section id="view-level-3" class="hidden animate-pop space-y-6">
+      <!-- Header Level 3 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-wider mb-1">
+            <span>MISI 03 • SINTESIS GAGASAN & AKSI NYATA KONTEKSTUAL</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Sintesis: "Upaya Melestarikan Lingkungan Hidup"</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Rangkai gagasan pokok menjadi ringkasan padu, lalu rumuskan solusi nyata untuk masalah lingkungan di sekitarmu!
+          </p>
+        </div>
+        <button onclick="toggleDossier('dossier-3')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-cyan-300 flex items-center gap-1.5 shrink-0 transition">
+          <span>📄</span> <span>Baca Kutipan Teks</span>
+        </button>
+      </div>
+
+      <!-- Arsip Bacaan Level 3 -->
+      <div id="dossier-3" class="hidden bg-slate-900 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">📂 Arsip Teks: Upaya Melestarikan Lingkungan Hidup</h3>
+          <button onclick="toggleDossier('dossier-3')" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Tutup ✕</button>
+        </div>
+        <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-64 overflow-y-auto pr-2">
+          <p><strong class="text-emerald-400">[Subtopik: Upaya Rekonsiliasi]</strong> Kerusakan lingkungan hidup yang kian parah menuntut adanya upaya rekonsiliasi antara kepentingan pembangunan manusia dan kelestarian alam. Manusia tidak dapat terus memandang pertumbuhan ekonomi secara terpisah dari kesehatan ekosistem yang menopang kehidupan.</p>
+          <p><strong class="text-cyan-400">[Subtopik: Perubahan Konsep Alam]</strong> Upaya rekonsiliasi tersebut harus dimulai dari perubahan cara pandang fundamental, yakni mengubah konsep alam dari sekadar <strong>objek eksploitasi</strong> menjadi <strong>subjek kehidupan</strong> yang memiliki hak untuk dihormati dan dijaga keseimbangannya.</p>
+          <p><strong class="text-amber-400">[Teladan Kearifan Lokal]</strong> Kearifan lokal masyarakat adat Papua yang memandang alam sebagai <strong>"ibu" pemberi kehidupan</strong> menjadi teladan nyata bagaimana manusia dapat hidup selaras dengan ekosistemnya. Sebagaimana seorang anak menghormati ibunya, manusia wajib merawat hutan, tanah, dan air dengan penuh tanggung jawab demi generasi masa depan.</p>
+        </div>
+      </div>
+
+      <!-- TAHAP 3A: MERANGKAI GAGASAN POKOK & RINGKASAN PADU -->
+      <div id="stage-3a" class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full">
+            TAHAP 3A • MERANGKAI GAGASAN POKOK MENJADI RINGKASAN
+          </span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-300 mb-5">
+          Susun urutan 4 gagasan pokok di bawah ini dari awal hingga simpulan menggunakan tombol panah <strong>▲ / ▼</strong> agar membentuk paragraf ringkasan yang logis dan padu!
+        </p>
+
+        <div id="summary-order-list" class="space-y-2.5 mb-5">
+          <!-- Item gagasan pokok di-render via JS -->
+        </div>
+
+        <div id="stage-3a-feedback" class="hidden rounded-2xl p-4 mb-4 border text-xs sm:text-sm"></div>
+
+        <button onclick="checkSummaryOrder()" id="btn-check-summary" class="btn-game w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-extrabold text-sm">
+          🧩 Verifikasi Susunan Ringkasan
+        </button>
+
+        <!-- Hasil Ringkasan Padu -->
+        <div id="summary-result-box" class="hidden mt-5 p-5 rounded-2xl bg-slate-950 border border-emerald-500/40 animate-pop">
+          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">✨ Ringkasan Padu Terbentuk:</div>
+          <p id="cohesive-summary-text" class="text-xs sm:text-sm text-slate-200 leading-relaxed mb-4"></p>
+          <button onclick="unlockStage3B()" class="btn-game w-full py-3 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-sm">
+            Lanjut ke Tahap 3B: Misi Lingkungan Sekitarku ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- TAHAP 3B: MISI LINGKUNGAN SEKITARKU (MEANINGFUL LEARNING PROJECT) -->
+      <div id="stage-3b" class="hidden bg-slate-900 border border-amber-500/30 rounded-3xl p-5 sm:p-8 shadow-xl max-w-3xl mx-auto animate-pop">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono uppercase mb-3">
+          <span>TAHAP 3B • PROYEK MINI AKSI NYATA (MEANINGFUL LEARNING)</span>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-extrabold text-white mb-2">Misi Lingkungan Sekitarku</h3>
+        <p class="text-xs sm:text-sm text-slate-400 mb-6">
+          Terapkan struktur teks eksposisi (Identifikasi Masalah/Tesis, Rekomendasi Solusi, dan Argumen Logis) untuk memecahkan masalah nyata di lingkungan sekolah atau tempat tinggalmu!
+        </p>
+
+        <form onsubmit="submitActionProject(event)" class="space-y-5">
+          <div>
+            <label for="env-problem" class="block text-xs font-bold text-rose-400 uppercase tracking-wider mb-1.5">
+              1. Masalah Kerusakan Lingkungan Nyata di Sekitarmu <span class="text-rose-400">*</span>
+            </label>
+            <textarea id="env-problem" rows="2" required placeholder="Contoh: Banyaknya sampah botol plastik sekali pakai yang menyumbat saluran air di sekitar kantin sekolah dan permukiman..."
+              class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-rose-400 transition"></textarea>
+          </div>
+
+          <div>
+            <label for="env-recommendation" class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">
+              2. Rekomendasi Solusi Konkret <span class="text-rose-400">*</span>
+            </label>
+            <textarea id="env-recommendation" rows="2" required placeholder="Contoh: Mewajibkan siswa membawa botol minum isi ulang (tumbler) dan menyediakan titik galon isi ulang serta bank sampah terpilah di tiap kelas..."
+              class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"></textarea>
+          </div>
+
+          <div>
+            <label for="env-argument" class="block text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1.5">
+              3. Argumen Logis (Disertai Fakta / Alasan Pendukung) <span class="text-rose-400">*</span>
+            </label>
+            <textarea id="env-argument" rows="3" required placeholder="Contoh: Sampah plastik membutuhkan ratusan tahun untuk terurai dan menjadi penyebab utama mampetnya selokan saat hujan. Dengan gerakan membawa tumbler, volume sampah plastik sekolah dapat ditekan hingga lebih dari 60% sekaligus menghemat uang saku siswa..."
+              class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition"></textarea>
+          </div>
+
+          <button type="submit" class="btn-game w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg">
+            🏆 Selesaikan Misi & Buka Rapor Detektif
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         VIEW 4: HALAMAN RAPOR DETEKTIF (LAPORAN HASIL BELAJAR, PRINT & APPS SCRIPT)
+         ====================================================================== -->
+    <section id="view-report" class="hidden animate-pop max-w-4xl mx-auto space-y-6">
+      
+      <!-- Banner Status Pengiriman Google Sheets (Apps Script) -->
+      <div id="sheets-sync-banner" class="no-print bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span id="sheets-sync-icon" class="text-xl">☁️</span>
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-300">Status Sinkronisasi Rekap Nilai Guru</div>
+            <p id="sheets-sync-text" class="text-xs text-slate-400 mt-0.5">Menunggu pengiriman laporan ke Google Sheets...</p>
+          </div>
+        </div>
+        <button onclick="sendReportToSheets(true)" id="btn-send-sheets" class="btn-game px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold shrink-0">
+          📤 Kirim Nilai ke Guru
+        </button>
+      </div>
+
+      <!-- Bar Aksi Atas (Tidak ikut tercetak) -->
+      <div class="no-print flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+        <button onclick="navigateTo('intro')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm font-semibold text-slate-200 transition">
+          ← Kembali ke Beranda
+        </button>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="copyReportSummary()" class="btn-game px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs sm:text-sm font-bold text-cyan-300 flex items-center gap-1.5">
+            <span>📋</span> <span>Salin Teks Laporan</span>
+          </button>
+          <button onclick="window.print()" class="btn-game px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+            <span>🖨️</span> <span>Cetak / Simpan Bukti Belajar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KARTU UTAMA RAPOR DETEKTIF (FORMAT SIAP CETAK A4 / PDF) -->
+      <div id="printable-report" class="print-card bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-6">
+        
+        <!-- Kop Rapor -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-emerald-400 print-text-muted font-bold">
+              LAPORAN CAPAIAN PEMBELAJARAN MENDALAM • BAHASA INDONESIA KELAS X
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white print-text-dark mt-1">
+              Rapor Detektif Teks Eksposisi
+            </h1>
+            <p class="text-xs text-slate-400 print-text-muted mt-1">
+              Materi: Menginterpretasi Makna, Struktur, Fakta & Opini dalam Teks Eksposisi
+            </p>
+          </div>
+          <div class="sm:text-right bg-slate-950 print-bg-light px-4 py-3 rounded-2xl border border-slate-800">
+            <div class="text-[10px] font-mono text-slate-400 print-text-muted uppercase">Predikat Nalar</div>
+            <div id="report-rank" class="text-sm sm:text-base font-extrabold text-amber-400 print-text-dark">Analis Muda Siaga</div>
+          </div>
+        </div>
+
+        <!-- Identitas Siswa & Ringkasan Skor -->
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4 space-y-1.5">
+            <div class="text-[11px] font-mono uppercase text-slate-400 print-text-muted">Identitas Peserta Didik</div>
+            <div class="text-sm font-bold text-white print-text-dark">Nama: <span id="report-name" class="font-normal">-</span></div>
+            <div class="text-sm font-bold text-white print-text-dark">Kelas: <span id="report-class" class="font-normal">-</span></div>
+            <div class="text-sm font-bold text-white print-text-dark">Sekolah: <span id="report-school" class="font-normal">-</span></div>
+            <div class="text-xs text-slate-400 print-text-muted pt-1">Tanggal: <span id="report-date">-</span></div>
+          </div>
+
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="text-[11px] font-mono uppercase text-slate-400 print-text-muted">Statistik Investigasi</div>
+            <div class="grid grid-cols-3 gap-2 my-2 text-center">
+              <div class="p-2 rounded-xl bg-slate-900 print-bg-light">
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-emerald-400 print-text-dark" id="report-score">0</div>
+                <div class="text-[10px] text-slate-400 print-text-muted">Total Skor</div>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-900 print-bg-light">
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-cyan-400 print-text-dark" id="report-accuracy">0%</div>
+                <div class="text-[10px] text-slate-400 print-text-muted">Akurasi Fakta</div>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-900 print-bg-light">
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-amber-400 print-text-dark" id="report-badges">0/3</div>
+                <div class="text-[10px] text-slate-400 print-text-muted">Lencana</div>
+              </div>
+            </div>
+            <div id="report-badge-names" class="text-[11px] text-amber-300 print-text-muted font-medium">
+              Lencana diraih: Belum ada
+            </div>
+          </div>
+        </div>
+
+        <!-- Rekapitulasi Per Level -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-300 print-text-dark border-b border-slate-800 pb-2">
+            Rekapitulasi Hasil Misi (Level 1 – Level 3)
+          </h3>
+
+          <!-- Rekap Level 1 -->
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-emerald-400 print-text-dark">LEVEL 1: Struktur Teks Pidato "Bahaya Narkoba bagi Generasi Muda"</span>
+              <span id="report-lvl1-status" class="text-xs font-mono font-bold text-slate-400">Belum Selesai</span>
+            </div>
+            <p id="report-lvl1-detail" class="text-xs text-slate-300 print-text-muted">
+              Klasifikasi Tesis, Argumen Pendukung, dan Rekomendasi.
+            </p>
+          </div>
+
+          <!-- Rekap Level 2 -->
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-cyan-400 print-text-dark">LEVEL 2: Fakta vs Opini & Evaluasi Kritis "Pembangunan dan Bencana Lingkungan"</span>
+              <span id="report-lvl2-status" class="text-xs font-mono font-bold text-slate-400">Belum Selesai</span>
+            </div>
+            <div class="text-xs text-slate-300 print-text-dark">
+              <strong>Jawaban Uji Nalar Kritis Siswa:</strong>
+              <p id="report-critical-answer" class="mt-1 italic text-slate-400 print-text-muted bg-slate-900 print-bg-light p-2.5 rounded-lg">
+                (Belum diisi)
+              </p>
+            </div>
+          </div>
+
+          <!-- Rekap Level 3 -->
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 print-text-dark">LEVEL 3: Sintesis & Rancangan Aksi Nyata Lingkungan Sekitar</span>
+              <span id="report-lvl3-status" class="text-xs font-mono font-bold text-slate-400">Belum Selesai</span>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-2.5 text-xs">
+              <div class="bg-slate-900 print-bg-light p-3 rounded-xl">
+                <div class="font-bold text-rose-400 print-text-dark mb-1">1. Masalah Sekitar:</div>
+                <p id="report-env-problem" class="text-slate-300 print-text-muted">(Belum diisi)</p>
+              </div>
+              <div class="bg-slate-900 print-bg-light p-3 rounded-xl">
+                <div class="font-bold text-amber-400 print-text-dark mb-1">2. Rekomendasi Solusi:</div>
+                <p id="report-env-rec" class="text-slate-300 print-text-muted">(Belum diisi)</p>
+              </div>
+              <div class="bg-slate-900 print-bg-light p-3 rounded-xl">
+                <div class="font-bold text-emerald-400 print-text-dark mb-1">3. Argumen Logis:</div>
+                <p id="report-env-arg" class="text-slate-300 print-text-muted">(Belum diisi)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Catatan Refleksi Mindful Learning -->
+          <div class="bg-slate-950 print-bg-light border border-slate-800 rounded-2xl p-4">
+            <div class="text-xs font-bold text-cyan-400 print-text-dark mb-1">Catatan Refleksi Metakognitif Siswa:</div>
+            <p id="report-reflections" class="text-xs text-slate-300 print-text-muted">
+              Belum ada catatan refleksi.
+            </p>
+          </div>
+        </div>
+
+        <!-- Kolom Tanda Tangan / Validasi Guru untuk Versi Cetak -->
+        <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between gap-6 text-xs text-slate-400 print-text-muted">
+          <div>
+            <p>Dokumen ini dihasilkan secara otomatis melalui aplikasi pembelajaran interaktif <strong>Ekspedisi Nalar</strong>.</p>
+          </div>
+          <div class="sm:text-right shrink-0">
+            <p class="mb-10">Mengetahui, Guru Mata Pelajaran Bahasa Indonesia</p>
+            <p class="font-bold text-slate-300 print-text-dark">( .................................................... )</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       FOOTER APLIKASI
+       ======================================================================== -->
+  <footer class="no-print border-t border-slate-800/80 py-4 px-4 text-center text-xs text-slate-500">
+    Ekspedisi Nalar • Media Pembelajaran Interaktif Bahasa Indonesia Kelas X SMA/SMK (Deep Learning Edition)
+  </footer>
+
+  <!-- ========================================================================
+       SCRIPT UTAMA LOGIKA GAME, AUDIO TONE.JS, STATE, EVALUASI & APPS SCRIPT
+       ======================================================================== -->
+  <script>
+    /* ========================================================================
+       0. KONFIGURASI GOOGLE APPS SCRIPT (TEMPEL URL WEB APP ANDA DI SINI)
+       ======================================================================== */
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0b8YrjD5WwaYXob91KB_i3obyWWxcyzxweXwQ7mNCN5ffa0FvaZs51pSWAAimXZ3D/exec"; // Contoh: "https://script.google.com/macros/s/AKfycbx.../exec"
+
+    /* ========================================================================
+       1. SISTEM AUDIO SINTETIS (TONE.JS) - TANPA URL EKSTERNAL
+       ======================================================================== */
+    let soundEnabled = true;
+    let synth = null;
+
+    function initAudio() {
+      if (!synth && typeof Tone !== 'undefined') {
+        try {
+          synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.01, decay: 0.15, sustain: 0.05, release: 0.3 }
+          }).toDestination();
+          synth.volume.value = -10;
+        } catch (e) {
+          console.warn('Audio init skipped:', e);
+        }
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!synth) return;
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        const now = Tone.now();
+        if (type === 'click') {
+          synth.triggerAttackRelease('C5', '32n', now);
+        } else if (type === 'correct') {
+          synth.triggerAttackRelease(['E5', 'G5', 'B5'], '16n', now);
+        } else if (type === 'wrong') {
+          synth.triggerAttackRelease(['C3', 'Eb3'], '8n', now);
+        } else if (type === 'badge') {
+          synth.triggerAttackRelease('C5', '16n', now);
+          synth.triggerAttackRelease('E5', '16n', now + 0.1);
+          synth.triggerAttackRelease('G5', '16n', now + 0.2);
+          synth.triggerAttackRelease('C6', '8n', now + 0.3);
+        }
+      } catch (err) {
+        // Abaikan error audio jika browser memblokir autoplay
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('icon-sound-on').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('icon-sound-off').classList.toggle('hidden', soundEnabled);
+      showToast(soundEnabled ? 'Efek suara diaktifkan' : 'Efek suara dimatikan', 'info');
+    }
+
+    /* ========================================================================
+       2. STATE GLOBAL PERMAINAN & DATA KURIKULUM
+       ======================================================================== */
+    const gameState = {
+      student: {
+        name: 'Analis Muda',
+        className: 'Kelas X',
+        school: '-'
+      },
+      energy: 5,
+      maxEnergy: 5,
+      score: 0,
+      streak: 0,
+      reportSubmitted: false,
+      badges: {
+        lvl1: { unlocked: false, name: 'Arsitek Struktur', icon: '🏛️', desc: 'Berhasil membedah tesis, argumen, dan rekomendasi teks pidato.' },
+        lvl2: { unlocked: false, name: 'Pemindai Kebenaran', icon: '🔬', desc: 'Berhasil membedakan fakta & opini serta menguji efektivitas argumen.' },
+        lvl3: { unlocked: false, name: 'Pelopor Aksi Nyata', icon: '🌱', desc: 'Berhasil menyusun ringkasan padu & solusi lingkungan sekitar.' }
+      },
+      reflections: [],
+      pendingNextLevel: null,
+      lvl1: {
+        completed: false,
+        placedCount: 0,
+        mistakes: 0,
+        selectedCardId: null
+      },
+      lvl2: {
+        completed: false,
+        currentIndex: 0,
+        correctScans: 0,
+        totalScans: 8,
+        timerActive: true,
+        timerInterval: null,
+        timeLeft: 25,
+        answeredCurrent: false,
+        criticalAnswer: '',
+        criticalScore: 0
+      },
+      lvl3: {
+        summaryCompleted: false,
+        completed: false,
+        envProblem: '',
+        envRecommendation: '',
+        envArgument: ''
+      }
+    };
+
+    // DATA LEVEL 1: 9 Kartu Struktur Pidato "Bahaya Narkoba bagi Generasi Muda"
+    const lvl1CardsData = [
+      {
+        id: 'c1',
+        category: 'tesis',
+        text: 'Narkoba merupakan ancaman serius yang dapat menghancurkan masa depan generasi muda dan ketahanan bangsa Indonesia.',
+        explanation: 'Tepat! Ini adalah TESIS karena memuat pernyataan pendapat utama pembicara mengenai bahaya narkoba yang menjadi pokok bahasan pidato.'
+      },
+      {
+        id: 'c2',
+        category: 'argumen',
+        text: 'Data Kemenkumham mencatat dari total 158.812 narapidana dan tahanan di Indonesia, sebanyak 51.899 orang tersandung kasus narkoba.',
+        explanation: 'Tepat! Ini adalah ARGUMEN karena menyajikan data kuantitatif resmi (Kemenkumham) sebagai bukti konkret untuk menguatkan tesis.'
+      },
+      {
+        id: 'c3',
+        category: 'rekomendasi',
+        text: 'Generasi muda harus membentengi diri dengan tiga langkah: memilih teman bergaul, meningkatkan keimanan, dan menabung kebaikan masa depan.',
+        explanation: 'Tepat! Ini adalah REKOMENDASI karena berisi saran langkah preventif konkret yang ditujukan kepada pendengar.'
+      },
+      {
+        id: 'c4',
+        category: 'tesis',
+        text: 'Penyalahgunaan narkotika bukan sekadar pelanggaran hukum biasa, melainkan kejahatan luar biasa yang mengancam keberlangsungan negara.',
+        explanation: 'Tepat! Ini termasuk TESIS karena menyampaikan klaim sudut pandang utama pembicara tentang urgensi masalah narkoba.'
+      },
+      {
+        id: 'c5',
+        category: 'argumen',
+        text: 'Jumlah penyalah guna narkoba di Indonesia diperkirakan mencapai 7 juta orang, sebuah fenomena gunung es karena angka riilnya jauh lebih besar.',
+        explanation: 'Tepat! Ini adalah ARGUMEN karena menyodorkan fakta estimasi dan analisis sebab-akibat ("fenomena gunung es") sebagai alasan pendukung.'
+      },
+      {
+        id: 'c6',
+        category: 'rekomendasi',
+        text: 'Bagi saudara-saudara kita yang telanjur terjerat narkoba, jangan ragu untuk segera melapor dan mengikuti program rehabilitasi medis maupun sosial.',
+        explanation: 'Tepat! Ini adalah REKOMENDASI karena merupakan imbauan persuasif dan solusi pemulihan pada bagian penutup pidato.'
+      },
+      {
+        id: 'c7',
+        category: 'tesis',
+        text: 'Generasi muda saat ini berada di persimpangan kritis: menjadi motor kemajuan bangsa atau terpuruk akibat jerat zat adiktif.',
+        explanation: 'Tepat! Ini merupakan TESIS karena merumuskan permasalahan utama yang akan dijabarkan pembicara.'
+      },
+      {
+        id: 'c8',
+        category: 'argumen',
+        text: 'Selain merusak saraf individu, peredaran narkoba menimbulkan kerugian ekonomi triliunan rupiah serta memicu meningkatnya angka kriminalitas.',
+        explanation: 'Tepat! Ini adalah ARGUMEN karena memaparkan alasan logis berupa dampak ekonomi dan keamanan untuk meyakinkan audiens.'
+      },
+      {
+        id: 'c9',
+        category: 'rekomendasi',
+        text: 'Mari kita satukan tekad di lingkungan sekolah dan keluarga untuk berani menolak segala bentuk tawaran narkoba demi masa depan bangsa.',
+        explanation: 'Tepat! Ditandai ajakan persuasif ("Mari kita..."), kalimat ini berfungsi sebagai REKOMENDASI tindakan nyata.'
+      }
+    ];
+
+    // DATA LEVEL 2A: 8 Pernyataan Scanner Fakta vs Opini ("Pembangunan dan Bencana Lingkungan")
+    const lvl2StatementsData = [
+      {
+        text: 'Laju penebangan hutan di Indonesia tercatat mencapai 3.180.243 hektare atau setara dengan 50 kali luas wilayah Jakarta.',
+        type: 'fakta',
+        reason: 'Kalimat ini adalah FAKTA karena memuat angka luas wilayah yang terukur (3.180.243 hektare) dan dapat dibuktikan secara objektif.'
+      },
+      {
+        text: 'Seharusnya pemerintah dan seluruh elemen masyarakat lebih tegas menerapkan konsep pembangunan berkelanjutan agar alam tidak dikorbankan.',
+        type: 'opini',
+        reason: 'Kalimat ini adalah OPINI karena menggunakan kata "seharusnya" yang menandakan saran, harapan, dan penilaian subjektif penulis.'
+      },
+      {
+        text: 'Banjir besar yang melanda Jakarta pada Februari 2007 disebabkan oleh buruknya sistem drainase serta menyusutnya daerah resapan air.',
+        type: 'fakta',
+        reason: 'Kalimat ini adalah FAKTA karena merujuk pada peristiwa historis nyata (Februari 2007) beserta penyebab fisik yang teramati.'
+      },
+      {
+        text: 'Bencana lingkungan yang terjadi saat ini merupakan cerminan dari sikap manusia yang terlalu serakah dalam mengeksploitasi sumber daya alam.',
+        type: 'opini',
+        reason: 'Kalimat ini adalah OPINI karena memuat penilaian moral subjektif ("terlalu serakah") berdasarkan sudut pandang penulis.'
+      },
+      {
+        text: 'Sepanjang tahun 2005 hingga 2006, tercatat ratusan peristiwa bencana alam seperti banjir dan tanah longsor terjadi di berbagai wilayah Indonesia.',
+        type: 'fakta',
+        reason: 'Kalimat ini adalah FAKTA karena menyajikan data peristiwa pada rentang waktu historis (2005–2006) yang terdokumentasi.'
+      },
+      {
+        text: 'Pembangunan ekonomi yang mengabaikan kelestarian ekologi pada hakikatnya hanyalah bom waktu yang akan merugikan generasi mendatang.',
+        type: 'opini',
+        reason: 'Kalimat ini adalah OPINI karena menggunakan ungkapan metafora ("bom waktu") dan prediksi evaluatif penulis.'
+      },
+      {
+        text: 'Enam masalah lingkungan utama di Indonesia meliputi pencemaran air, pencemaran udara, kerusakan hutan, abrasi pantai, kerusakan terumbu karang, dan persoalan sampah.',
+        type: 'fakta',
+        reason: 'Kalimat ini adalah FAKTA karena merinci klasifikasi kondisi lingkungan aktual yang dapat diverifikasi secara ilmiah.'
+      },
+      {
+        text: 'Apabila tata ruang kota tidak segera dibenahi secara menyeluruh, kawasan perkotaan akan selalu menjadi langganan banjir setiap musim hujan.',
+        type: 'opini',
+        reason: 'Kalimat ini adalah OPINI karena berupa dugaan atau prediksi kondisi masa depan yang bersifat argumentatif.'
+      }
+    ];
+
+    // DATA LEVEL 3A: Gagasan Pokok Berurutan ("Upaya Melestarikan Lingkungan Hidup")
+    const lvl3SummaryCorrectOrder = [
+      {
+        id: 's1',
+        correctPos: 1,
+        label: 'Gagasan Pokok 1 (Masalah & Kebutuhan Rekonsiliasi)',
+        text: 'Kerusakan lingkungan hidup yang kian parah menuntut adanya upaya rekonsiliasi antara kepentingan pembangunan manusia dan kelestarian alam.'
+      },
+      {
+        id: 's2',
+        correctPos: 2,
+        label: 'Gagasan Pokok 2 (Perubahan Konsep Alam)',
+        text: 'Upaya rekonsiliasi tersebut harus dimulai dari perubahan cara pandang, yakni mengubah konsep alam dari sekadar objek eksploitasi menjadi subjek kehidupan yang harus dihormati.'
+      },
+      {
+        id: 's3',
+        correctPos: 3,
+        label: 'Gagasan Pokok 3 (Kearifan Lokal Masyarakat Papua)',
+        text: 'Kearifan lokal masyarakat adat Papua yang memandang alam sebagai "ibu" pemberi kehidupan menjadi teladan nyata bagaimana manusia dapat hidup selaras dengan ekosistemnya.'
+      },
+      {
+        id: 's4',
+        correctPos: 4,
+        label: 'Gagasan Pokok 4 (Simpulan & Harapan Masa Depan)',
+        text: 'Dengan mengadopsi kesadaran ekologis dan kearifan lokal tersebut ke dalam kebijakan modern, kelestarian lingkungan hidup dapat terjaga demi generasi masa depan.'
+      }
+    ];
+
+    let currentSummaryItems = [];
+
+    // DATA JEDA REFLEKSI METAKOGNITIF (MINDFUL LEARNING)
+    const reflectionPrompts = {
+      1: {
+        title: 'Jeda Refleksi: Memahami Struktur Nalar',
+        question: 'Bagaimana cara otakmu membedakan mana bagian yang merupakan pendapat utama (tesis), bukti pendukung (argumen), dan ajakan tindakan (rekomendasi) dalam pidato tadi?',
+        options: [
+          'Saya mencari ciri bahasa: tesis berupa pernyataan sikap, argumen memuat data/angka, dan rekomendasi memakai kata ajakan/saran.',
+          'Saya melihat posisi dan fungsinya: gagasan awal sebagai tesis, penjelasan sebab-akibat sebagai argumen, dan solusi penutup sebagai rekomendasi.',
+          'Saya menguji apakah kalimat tersebut bisa dibuktikan dengan data (argumen) atau berupa gagasan yang perlu dibuktikan (tesis).'
+        ]
+      },
+      2: {
+        title: 'Jeda Refleksi: Kesadaran Fakta vs Opini',
+        question: 'Saat memindai pernyataan tadi, petunjuk apa yang paling membantu kamu agar tidak terkecoh antara fakta objektif dan opini penulis?',
+        options: [
+          'Memeriksa keberadaan angka pasti, tahun kejadian, dan peristiwa nyata yang dapat diverifikasi siapa pun (Fakta).',
+          'Mendeteksi kata-kata penilaian subjektif atau saran seperti "seharusnya", "terlalu serakah", atau "bom waktu" (Opini).',
+          'Menahan diri sejenak untuk membaca kalimat secara utuh sebelum menekan tombol keputusan.'
+        ]
+      }
+    };
+
+    /* ========================================================================
+       3. FUNGSI PEMBARUAN HUD, NOTIFIKASI, ENERGI & NAVIGASI
+       ======================================================================== */
+    function updateHUD() {
+      document.getElementById('hud-agent-name').textContent = `Analis: ${gameState.student.name} (${gameState.student.className})`;
+      
+      const energyContainer = document.getElementById('energy-icons');
+      energyContainer.innerHTML = '';
+      for (let i = 0; i < gameState.maxEnergy; i++) {
+        const active = i < gameState.energy;
+        energyContainer.innerHTML += `<span class="${active ? 'text-amber-400' : 'text-slate-700'} text-xs sm:text-sm">⚡</span>`;
+      }
+      document.getElementById('energy-text').textContent = `${gameState.energy}/${gameState.maxEnergy}`;
+
+      document.getElementById('hud-score').textContent = gameState.score;
+      const unlockedCount = Object.values(gameState.badges).filter(b => b.unlocked).length;
+      document.getElementById('hud-badge-count').textContent = `${unlockedCount}/3`;
+
+      [1, 2, 3].forEach(lvl => {
+        const btn = document.getElementById(`nav-lvl-${lvl}`);
+        const isDone = (lvl === 1 && gameState.lvl1.completed) || (lvl === 2 && gameState.lvl2.completed) || (lvl === 3 && gameState.lvl3.completed);
+        if (isDone) {
+          btn.classList.add('border-emerald-500/50', 'text-emerald-300', 'bg-emerald-950/40');
+        }
+      });
+    }
+
+    function addScore(points) {
+      gameState.score = Math.max(0, gameState.score + points);
+      updateHUD();
+    }
+
+    function modifyEnergy(delta) {
+      gameState.energy = Math.max(0, Math.min(gameState.maxEnergy, gameState.energy + delta));
+      updateHUD();
+      if (gameState.energy === 0) {
+        clearInterval(gameState.lvl2.timerInterval);
+        document.getElementById('energy-modal').classList.remove('hidden');
+        document.getElementById('energy-modal').classList.add('flex');
+      }
+    }
+
+    function rechargeEnergy() {
+      playSound('badge');
+      gameState.energy = 3;
+      updateHUD();
+      document.getElementById('energy-modal').classList.add('hidden');
+      document.getElementById('energy-modal').classList.remove('flex');
+      showToast('⚡ Energi Nalar dipulihkan! Lanjutkan investigasi dengan teliti.', 'success');
+      if (!document.getElementById('view-level-2').classList.contains('hidden') && !gameState.lvl2.answeredCurrent && document.getElementById('stage-2b').classList.contains('hidden')) {
+        startScanTimer();
+      }
+    }
+
+    function unlockBadge(key) {
+      if (!gameState.badges[key].unlocked) {
+        gameState.badges[key].unlocked = true;
+        playSound('badge');
+        updateHUD();
+        showToast(`🏅 Lencana Baru Diraih: "${gameState.badges[key].name}"!`, 'badge');
+      }
+    }
+
+    function toggleBadgeDrawer() {
+      playSound('click');
+      const modal = document.getElementById('badge-modal');
+      const isHidden = modal.classList.contains('hidden');
+      if (isHidden) {
+        const container = document.getElementById('badge-list-container');
+        container.innerHTML = Object.values(gameState.badges).map(b => `
+          <div class="p-3.5 rounded-2xl border ${b.unlocked ? 'bg-amber-500/10 border-amber-500/40' : 'bg-slate-950 border-slate-800 opacity-60'} flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-xl ${b.unlocked ? 'bg-amber-500/20' : 'bg-slate-900'} flex items-center justify-center text-2xl shrink-0">
+              ${b.unlocked ? b.icon : '🔒'}
+            </div>
+            <div>
+              <div class="text-sm font-extrabold ${b.unlocked ? 'text-amber-300' : 'text-slate-400'}">${b.name}</div>
+              <p class="text-xs text-slate-300 mt-0.5">${b.desc}</p>
+            </div>
+          </div>
+        `).join('');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      let colors = 'bg-slate-900 border-slate-700 text-slate-100';
+      if (type === 'success') colors = 'bg-emerald-950/95 border-emerald-500/60 text-emerald-200';
+      if (type === 'error') colors = 'bg-rose-950/95 border-rose-500/60 text-rose-200';
+      if (type === 'badge') colors = 'bg-amber-950/95 border-amber-400/70 text-amber-200';
+
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-semibold animate-pop ${colors}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 260);
+      }, 3200);
+    }
+
+    function navigateTo(viewName) {
+      clearInterval(gameState.lvl2.timerInterval);
+      const views = ['view-intro', 'view-level-1', 'view-reflection', 'view-level-2', 'view-level-3', 'view-report'];
+      views.forEach(v => document.getElementById(v).classList.add('hidden'));
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      if (viewName === 'level-1') initLevel1();
+      if (viewName === 'level-2') initLevel2();
+      if (viewName === 'level-3') initLevel3();
+      if (viewName === 'report') renderFinalReport();
+    }
+
+    function startMission(e) {
+      e.preventDefault();
+      playSound('click');
+      const nameVal = document.getElementById('input-name').value.trim();
+      const classVal = document.getElementById('input-class').value.trim();
+      const schoolVal = document.getElementById('input-school').value.trim();
+
+      if (!nameVal || !classVal) {
+        showToast('Silakan isi Nama Lengkap dan Kelas terlebih dahulu.', 'error');
+        return;
+      }
+
+      gameState.student.name = nameVal;
+      gameState.student.className = classVal;
+      gameState.student.school = schoolVal || '-';
+      updateHUD();
+      showToast(`Selamat bertugas, Analis ${nameVal}!`, 'success');
+      navigateTo('level-1');
+    }
+
+    function quickJump(levelNum) {
+      playSound('click');
+      const nameVal = document.getElementById('input-name').value.trim();
+      const classVal = document.getElementById('input-class').value.trim();
+      const schoolVal = document.getElementById('input-school').value.trim();
+      if (nameVal) gameState.student.name = nameVal;
+      if (classVal) gameState.student.className = classVal;
+      if (schoolVal) gameState.student.school = schoolVal;
+      updateHUD();
+      navigateTo(`level-${levelNum}`);
+    }
+
+    function jumpToLevel(levelNum) {
+      playSound('click');
+      navigateTo(`level-${levelNum}`);
+    }
+
+    function toggleDossier(id) {
+      playSound('click');
+      const el = document.getElementById(id);
+      el.classList.toggle('hidden');
+    }
+
+    /* ========================================================================
+       4. LOGIKA LEVEL 1: KLASIFIKASI STRUKTUR TEKS PIDATO (DRAG & DROP + TAP)
+       ======================================================================== */
+    let lvl1Initialized = false;
+
+    function initLevel1() {
+      if (lvl1Initialized) return;
+      lvl1Initialized = true;
+
+      const shuffled = [...lvl1CardsData].sort(() => Math.random() - 0.5);
+      const pool = document.getElementById('lvl1-card-pool');
+      pool.innerHTML = '';
+
+      shuffled.forEach(card => {
+        const div = document.createElement('div');
+        div.id = `card-${card.id}`;
+        div.draggable = true;
+        div.dataset.id = card.id;
+        div.className = 'draggable-card bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-xl p-3.5 text-xs sm:text-sm text-slate-200 leading-relaxed shadow-md';
+        div.innerHTML = `
+          <div class="flex items-start gap-2">
+            <span class="text-slate-500 font-mono text-xs mt-0.5">⋮⋮</span>
+            <span>"${card.text}"</span>
+          </div>
+        `;
+
+        div.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', card.id);
+          selectCardForTap(card.id);
+        });
+
+        div.addEventListener('click', () => {
+          playSound('click');
+          selectCardForTap(card.id);
+        });
+
+        pool.appendChild(div);
+      });
+    }
+
+    function selectCardForTap(cardId) {
+      document.querySelectorAll('.draggable-card').forEach(el => el.classList.remove('selected-card'));
+      
+      if (gameState.lvl1.selectedCardId === cardId) {
+        gameState.lvl1.selectedCardId = null;
+        document.getElementById('lvl1-selected-hint').classList.add('hidden');
+        return;
+      }
+
+      gameState.lvl1.selectedCardId = cardId;
+      const el = document.getElementById(`card-${cardId}`);
+      if (el) {
+        el.classList.add('selected-card');
+        document.getElementById('lvl1-selected-hint').classList.remove('hidden');
+      }
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e, targetCategory) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const cardId = e.dataTransfer.getData('text/plain');
+      if (cardId) {
+        evaluateCardPlacement(cardId, targetCategory);
+      }
+    }
+
+    function handleZoneClick(targetCategory) {
+      if (gameState.lvl1.selectedCardId) {
+        evaluateCardPlacement(gameState.lvl1.selectedCardId, targetCategory);
+      }
+    }
+
+    function evaluateCardPlacement(cardId, targetCategory) {
+      const cardObj = lvl1CardsData.find(c => c.id === cardId);
+      const cardEl = document.getElementById(`card-${cardId}`);
+      if (!cardObj || !cardEl) return;
+
+      const feedbackBox = document.getElementById('lvl1-feedback');
+      feedbackBox.classList.remove('hidden');
+
+      if (cardObj.category === targetCategory) {
+        playSound('correct');
+        gameState.lvl1.placedCount++;
+        gameState.streak++;
+        const bonus = gameState.streak >= 3 ? 25 : 0;
+        addScore(100 + bonus);
+
+        cardEl.draggable = false;
+        cardEl.classList.remove('draggable-card', 'selected-card', 'bg-slate-950', 'border-slate-700');
+        cardEl.classList.add('bg-slate-950/90', 'border-emerald-500/40', 'text-xs', 'p-3', 'rounded-xl', 'text-slate-200');
+        cardEl.innerHTML = `<div class="flex items-start gap-2"><span class="text-emerald-400 font-bold">✓</span><span>"${cardObj.text}"</span></div>`;
+        
+        const cleanClone = cardEl.cloneNode(true);
+        cardEl.remove();
+        document.getElementById(`list-${targetCategory}`).appendChild(cleanClone);
+
+        gameState.lvl1.selectedCardId = null;
+        document.getElementById('lvl1-selected-hint').classList.add('hidden');
+
+        document.getElementById('lvl1-progress').textContent = gameState.lvl1.placedCount;
+        const zoneCount = document.getElementById(`list-${targetCategory}`).children.length;
+        document.getElementById(`count-${targetCategory}`).textContent = `${zoneCount}/3`;
+
+        feedbackBox.className = 'rounded-2xl p-4 border bg-emerald-950/60 border-emerald-500/50 text-emerald-100 text-xs sm:text-sm animate-pop';
+        feedbackBox.innerHTML = `<strong class="text-emerald-400">Analisis Tepat (+${100 + bonus} Poin):</strong> ${cardObj.explanation}`;
+
+        if (gameState.lvl1.placedCount === 9) {
+          gameState.lvl1.completed = true;
+          unlockBadge('lvl1');
+          document.getElementById('lvl1-complete-bar').classList.remove('hidden');
+          document.getElementById('lvl1-card-pool').parentElement.classList.add('hidden');
+        }
+      } else {
+        playSound('wrong');
+        gameState.lvl1.mistakes++;
+        gameState.streak = 0;
+        addScore(-20);
+        modifyEnergy(-1);
+
+        cardEl.classList.add('animate-shake', 'border-rose-500');
+        setTimeout(() => cardEl.classList.remove('animate-shake', 'border-rose-500'), 450);
+
+        const labelMap = { tesis: 'Tesis (Pendapat Utama)', argumen: 'Argumen Pendukung', rekomendasi: 'Rekomendasi (Saran)' };
+        let hint = 'Periksa kembali fungsi kalimat ini dalam pidato.';
+        if (targetCategory === 'tesis') hint = 'Bagian Tesis hanya berisi pernyataan pendapat/isu utama, bukan data statistik atau kalimat ajakan.';
+        if (targetCategory === 'argumen') hint = 'Bagian Argumen harus memuat data terukur, fakta lapangan, atau alasan sebab-akibat yang membuktikan tesis.';
+        if (targetCategory === 'rekomendasi') hint = 'Bagian Rekomendasi berisi saran langkah konkret atau ajakan persuasif di akhir pidato.';
+
+        feedbackBox.className = 'rounded-2xl p-4 border bg-rose-950/60 border-rose-500/50 text-rose-100 text-xs sm:text-sm animate-pop';
+        feedbackBox.innerHTML = `<strong class="text-rose-400">Kurang Tepat di Kotak ${labelMap[targetCategory]}:</strong> ${hint}`;
+      }
+    }
+
+    /* ========================================================================
+       5. LOGIKA JEDA REFLEKSI (MINDFUL LEARNING)
+       ======================================================================== */
+    function openReflection(completedLevel) {
+      playSound('click');
+      gameState.pendingNextLevel = completedLevel + 1;
+      const data = reflectionPrompts[completedLevel];
+
+      document.getElementById('reflection-title').textContent = data.title;
+      document.getElementById('reflection-question').textContent = data.question;
+      document.getElementById('reflection-note').value = '';
+
+      const optionsContainer = document.getElementById('reflection-options');
+      optionsContainer.innerHTML = data.options.map((opt, idx) => `
+        <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/50 cursor-pointer transition">
+          <input type="radio" name="reflection-choice" value="${opt}" ${idx === 0 ? 'checked' : ''} class="mt-1 accent-cyan-400" />
+          <span class="text-xs sm:text-sm text-slate-200 leading-relaxed">${opt}</span>
+        </label>
+      `).join('');
+
+      navigateTo('reflection');
+    }
+
+    function proceedFromReflection() {
+      playSound('click');
+      const selectedRadio = document.querySelector('input[name="reflection-choice"]:checked');
+      const customNote = document.getElementById('reflection-note').value.trim();
+      const levelRef = gameState.pendingNextLevel - 1;
+
+      const summaryReflection = `Level ${levelRef}: ${selectedRadio ? selectedRadio.value : ''}${customNote ? ` (Catatan: "${customNote}")` : ''}`;
+      gameState.reflections.push(summaryReflection);
+      addScore(50);
+      showToast('+50 Poin Kesadaran Nalar!', 'success');
+
+      navigateTo(`level-${gameState.pendingNextLevel}`);
+    }
+
+    /* ========================================================================
+       6. LOGIKA LEVEL 2: SCANNER FAKTA VS OPINI & EVALUASI KRITIS
+       ======================================================================== */
+    function initLevel2() {
+      if (gameState.lvl2.completed) return;
+      if (gameState.lvl2.currentIndex < lvl2StatementsData.length) {
+        renderScanQuestion();
+      }
+    }
+
+    function toggleScannerTimerMode() {
+      playSound('click');
+      gameState.lvl2.timerActive = !gameState.lvl2.timerActive;
+      const btn = document.getElementById('btn-timer-mode');
+      const wrapper = document.getElementById('scan-timer-wrapper');
+      if (gameState.lvl2.timerActive) {
+        btn.textContent = '⏱️ Timer: Aktif';
+        wrapper.classList.remove('hidden');
+        if (!gameState.lvl2.answeredCurrent) startScanTimer();
+      } else {
+        btn.textContent = '🧘 Mode Santai';
+        wrapper.classList.add('hidden');
+        clearInterval(gameState.lvl2.timerInterval);
+      }
+    }
+
+    function startScanTimer() {
+      clearInterval(gameState.lvl2.timerInterval);
+      if (!gameState.lvl2.timerActive) return;
+
+      gameState.lvl2.timeLeft = 25;
+      const bar = document.getElementById('scan-timer-bar');
+      bar.style.width = '100%';
+
+      gameState.lvl2.timerInterval = setInterval(() => {
+        gameState.lvl2.timeLeft -= 0.25;
+        const pct = Math.max(0, (gameState.lvl2.timeLeft / 25) * 100);
+        bar.style.width = `${pct}%`;
+
+        if (gameState.lvl2.timeLeft <= 0) {
+          clearInterval(gameState.lvl2.timerInterval);
+          handleScanTimeout();
+        }
+      }, 250);
+    }
+
+    function renderScanQuestion() {
+      const idx = gameState.lvl2.currentIndex;
+      const item = lvl2StatementsData[idx];
+      gameState.lvl2.answeredCurrent = false;
+
+      document.getElementById('scan-current').textContent = idx + 1;
+      document.getElementById('scan-statement-text').textContent = `"${item.text}"`;
+      document.getElementById('scan-feedback').classList.add('hidden');
+      document.getElementById('scan-buttons').classList.remove('hidden');
+      document.getElementById('scan-next-wrapper').classList.add('hidden');
+
+      startScanTimer();
+    }
+
+    function handleScanTimeout() {
+      if (gameState.lvl2.answeredCurrent) return;
+      gameState.lvl2.answeredCurrent = true;
+      playSound('wrong');
+      modifyEnergy(-1);
+
+      const item = lvl2StatementsData[gameState.lvl2.currentIndex];
+      const fb = document.getElementById('scan-feedback');
+      fb.className = 'rounded-2xl p-4 mb-5 border bg-amber-950/70 border-amber-500/50 text-amber-100 text-xs sm:text-sm animate-pop';
+      fb.innerHTML = `<strong class="text-amber-400">Waktu Pemindaian Habis!</strong> Pernyataan ini adalah <strong>${item.type.toUpperCase()}</strong>. ${item.reason}`;
+      fb.classList.remove('hidden');
+
+      document.getElementById('scan-buttons').classList.add('hidden');
+      document.getElementById('scan-next-wrapper').classList.remove('hidden');
+      updateScanAccuracyUI();
+    }
+
+    function submitScanAnswer(choice) {
+      if (gameState.lvl2.answeredCurrent) return;
+      gameState.lvl2.answeredCurrent = true;
+      clearInterval(gameState.lvl2.timerInterval);
+
+      const item = lvl2StatementsData[gameState.lvl2.currentIndex];
+      const fb = document.getElementById('scan-feedback');
+      fb.classList.remove('hidden');
+
+      if (choice === item.type) {
+        playSound('correct');
+        gameState.lvl2.correctScans++;
+        addScore(100);
+        fb.className = 'rounded-2xl p-4 mb-5 border bg-emerald-950/70 border-emerald-500/50 text-emerald-100 text-xs sm:text-sm animate-pop';
+        fb.innerHTML = `<strong class="text-emerald-400">✓ Pemindaian Akurat (+100 Poin):</strong> ${item.reason}`;
+      } else {
+        playSound('wrong');
+        modifyEnergy(-1);
+        addScore(-15);
+        fb.className = 'rounded-2xl p-4 mb-5 border bg-rose-950/70 border-rose-500/50 text-rose-100 text-xs sm:text-sm animate-pop';
+        fb.innerHTML = `<strong class="text-rose-400">✕ Kurang Tepat:</strong> ${item.reason}`;
+      }
+
+      updateScanAccuracyUI();
+      document.getElementById('scan-buttons').classList.add('hidden');
+      document.getElementById('scan-next-wrapper').classList.remove('hidden');
+      
+      if (gameState.lvl2.currentIndex === lvl2StatementsData.length - 1) {
+        document.getElementById('btn-scan-next').textContent = 'Lanjut ke Tahap 2B: Uji Nalar Kritis ➔';
+      }
+    }
+
+    function updateScanAccuracyUI() {
+      const answeredCount = gameState.lvl2.currentIndex + 1;
+      const pct = Math.round((gameState.lvl2.correctScans / answeredCount) * 100);
+      document.getElementById('scan-accuracy').textContent = `${pct}%`;
+    }
+
+    function nextScanQuestion() {
+      playSound('click');
+      gameState.lvl2.currentIndex++;
+      if (gameState.lvl2.currentIndex < lvl2StatementsData.length) {
+        renderScanQuestion();
+      } else {
+        document.getElementById('stage-2a').classList.add('hidden');
+        document.getElementById('stage-2b').classList.remove('hidden');
+      }
+    }
+
+    function evaluateCriticalAnswer() {
+      const rawText = document.getElementById('critical-answer-input').value.trim();
+      if (rawText.length < 25) {
+        playSound('wrong');
+        showToast('Tuliskan alasanmu lebih lengkap (minimal 25 karakter) agar nalar kritismu teruji.', 'error');
+        return;
+      }
+
+      playSound('correct');
+      gameState.lvl2.criticalAnswer = rawText;
+
+      const lower = rawText.toLowerCase();
+      const keywords = [
+        'belum', 'tidak efektif', 'kurang', 'banjir', 'hutan', 'penebangan',
+        'drainase', 'resapan', 'bencana', 'berkelanjutan', 'pengawasan', 'kesadaran', 'eksploitasi'
+      ];
+      let matched = keywords.filter(kw => lower.includes(kw));
+      const bonusScore = matched.length >= 3 ? 200 : matched.length >= 1 ? 150 : 120;
+
+      gameState.lvl2.criticalScore = bonusScore;
+      gameState.lvl2.completed = true;
+      addScore(bonusScore);
+      unlockBadge('lvl2');
+
+      const banner = document.getElementById('critical-score-banner');
+      banner.innerHTML = `
+        <strong>🌟 Analisis Kritis Diterima (+${bonusScore} Poin)!</strong><br/>
+        Kamu berhasil mengaitkan evaluasi efektivitas rekomendasi dengan <strong>${matched.length} konsep kunci</strong> dari teks (seperti isu keberlanjutan, dampak bencana, dan fakta lapangan). Bandingkan jawabanmu dengan analisis pembanding di bawah ini:
+      `;
+
+      document.getElementById('btn-submit-critical').classList.add('hidden');
+      document.getElementById('critical-answer-input').disabled = true;
+      document.getElementById('critical-feedback-box').classList.remove('hidden');
+    }
+
+    /* ========================================================================
+       7. LOGIKA LEVEL 3: MERANGKAI RINGKASAN & MISI LINGKUNGAN SEKITARKU
+       ======================================================================== */
+    let lvl3Initialized = false;
+
+    function initLevel3() {
+      if (lvl3Initialized) return;
+      lvl3Initialized = true;
+
+      currentSummaryItems = [
+        lvl3SummaryCorrectOrder[2],
+        lvl3SummaryCorrectOrder[0],
+        lvl3SummaryCorrectOrder[3],
+        lvl3SummaryCorrectOrder[1]
+      ];
+      renderSummaryOrderList();
+    }
+
+    function renderSummaryOrderList() {
+      const container = document.getElementById('summary-order-list');
+      container.innerHTML = currentSummaryItems.map((item, idx) => `
+        <div class="bg-slate-950 border border-slate-700 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <span class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+              ${idx + 1}
+            </span>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">${item.text}</p>
+          </div>
+          <div class="flex flex-col gap-1 shrink-0">
+            <button onclick="moveSummaryItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs text-white transition" title="Geser ke Atas">▲</button>
+            <button onclick="moveSummaryItem(${idx}, 1)" ${idx === currentSummaryItems.length - 1 ? 'disabled' : ''} class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-xs text-white transition" title="Geser ke Bawah">▼</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function moveSummaryItem(index, direction) {
+      playSound('click');
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= currentSummaryItems.length) return;
+      const temp = currentSummaryItems[index];
+      currentSummaryItems[index] = currentSummaryItems[newIndex];
+      currentSummaryItems[newIndex] = temp;
+      renderSummaryOrderList();
+    }
+
+    function checkSummaryOrder() {
+      const isCorrect = currentSummaryItems.every((item, idx) => item.correctPos === idx + 1);
+      const fb = document.getElementById('stage-3a-feedback');
+      fb.classList.remove('hidden');
+
+      if (isCorrect) {
+        playSound('correct');
+        gameState.lvl3.summaryCompleted = true;
+        addScore(150);
+        fb.className = 'rounded-2xl p-4 mb-4 border bg-emerald-950/70 border-emerald-500/50 text-emerald-200 text-xs sm:text-sm animate-pop';
+        fb.innerHTML = '<strong>✓ Susunan Logis & Padu (+150 Poin)!</strong> Alur gagasan pokok mulai dari masalah lingkungan, perubahan konsep alam, kearifan lokal Papua, hingga simpulan masa depan telah tersusun sempurna.';
+
+        document.getElementById('btn-check-summary').classList.add('hidden');
+        document.getElementById('cohesive-summary-text').textContent = currentSummaryItems.map(i => i.text).join(' ');
+        document.getElementById('summary-result-box').classList.remove('hidden');
+      } else {
+        playSound('wrong');
+        modifyEnergy(-1);
+        fb.className = 'rounded-2xl p-4 mb-4 border bg-rose-950/70 border-rose-500/50 text-rose-200 text-xs sm:text-sm animate-pop';
+        fb.innerHTML = '<strong>Urutan Gagasan Belum Padu:</strong> Mulailah dari pengenalan masalah & perlunya <em>upaya rekonsiliasi</em>, dilanjutkan <em>perubahan konsep alam</em>, lalu contoh <em>kearifan lokal Papua</em>, dan diakhiri dengan <em>simpulan masa depan</em>.';
+      }
+    }
+
+    function unlockStage3B() {
+      playSound('click');
+      document.getElementById('stage-3a').classList.add('hidden');
+      document.getElementById('stage-3b').classList.remove('hidden');
+    }
+
+    function submitActionProject(e) {
+      e.preventDefault();
+      const prob = document.getElementById('env-problem').value.trim();
+      const rec = document.getElementById('env-recommendation').value.trim();
+      const arg = document.getElementById('env-argument').value.trim();
+
+      if (prob.length < 15 || rec.length < 15 || arg.length < 20) {
+        playSound('wrong');
+        showToast('Lengkapi ketiga komponen proyek aksi nyatamu dengan penjelasan yang jelas.', 'error');
+        return;
+      }
+
+      gameState.lvl3.envProblem = prob;
+      gameState.lvl3.envRecommendation = rec;
+      gameState.lvl3.envArgument = arg;
+      gameState.lvl3.completed = true;
+
+      addScore(250);
+      unlockBadge('lvl3');
+      showToast('Selamat! Seluruh Misi Ekspedisi Nalar Berhasil Diselesaikan!', 'badge');
+      
+      // Pindah ke Rapor dan kirim otomatis ke Google Sheets jika URL tersedia
+      navigateTo('report');
+      if (GOOGLE_SCRIPT_URL && !gameState.reportSubmitted) {
+        sendReportToSheets(false);
+      }
+    }
+
+    /* ========================================================================
+       8. HALAMAN RAPOR DETEKTIF, PENGIRIMAN GOOGLE SHEETS & CETAK
+       ======================================================================== */
+    function getCalculatedRank() {
+      if (gameState.score >= 1300) return 'Detektif Utama Nalar Kritis';
+      if (gameState.score >= 800) return 'Analis Muda Andal';
+      return 'Penjelajah Teks Eksposisi';
+    }
+
+    function renderFinalReport() {
+      document.getElementById('report-name').textContent = gameState.student.name;
+      document.getElementById('report-class').textContent = gameState.student.className;
+      document.getElementById('report-school').textContent = gameState.student.school;
+
+      const today = new Date();
+      document.getElementById('report-date').textContent = today.toLocaleDateString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      document.getElementById('report-score').textContent = gameState.score;
+
+      const acc = Math.round((gameState.lvl2.correctScans / gameState.lvl2.totalScans) * 100);
+      document.getElementById('report-accuracy').textContent = `${acc}%`;
+
+      const unlockedBadges = Object.values(gameState.badges).filter(b => b.unlocked);
+      document.getElementById('report-badges').textContent = `${unlockedBadges.length}/3`;
+      document.getElementById('report-badge-names').textContent = unlockedBadges.length > 0
+        ? `Lencana diraih: ${unlockedBadges.map(b => `${b.icon} ${b.name}`).join(' • ')}`
+        : 'Lencana diraih: Belum ada';
+
+      document.getElementById('report-rank').textContent = getCalculatedRank();
+
+      document.getElementById('report-lvl1-status').textContent = gameState.lvl1.completed ? '✓ Tuntas (9/9 Kartu)' : `${gameState.lvl1.placedCount}/9 Kartu`;
+      document.getElementById('report-lvl1-detail').textContent = `Berhasil mengidentifikasi 3 Tesis, 3 Argumen Pendukung, dan 3 Rekomendasi pada teks pidato "Bahaya Narkoba bagi Generasi Muda".`;
+
+      document.getElementById('report-lvl2-status').textContent = gameState.lvl2.completed ? `✓ Tuntas (Akurasi ${acc}%)` : 'Belum Tuntas';
+      document.getElementById('report-critical-answer').textContent = gameState.lvl2.criticalAnswer || '(Belum diisi)';
+
+      document.getElementById('report-lvl3-status').textContent = gameState.lvl3.completed ? '✓ Tuntas (Proyek Terkirim)' : 'Belum Tuntas';
+      document.getElementById('report-env-problem').textContent = gameState.lvl3.envProblem || '(Belum diisi)';
+      document.getElementById('report-env-rec').textContent = gameState.lvl3.envRecommendation || '(Belum diisi)';
+      document.getElementById('report-env-arg').textContent = gameState.lvl3.envArgument || '(Belum diisi)';
+
+      document.getElementById('report-reflections').innerHTML = gameState.reflections.length > 0
+        ? gameState.reflections.map(r => `• ${r}`).join('<br/>')
+        : 'Belum ada catatan refleksi.';
+
+      // Perbarui status banner Google Sheets
+      const syncText = document.getElementById('sheets-sync-text');
+      const syncIcon = document.getElementById('sheets-sync-icon');
+      if (!GOOGLE_SCRIPT_URL) {
+        syncIcon.textContent = 'ℹ️';
+        syncText.textContent = 'URL Google Apps Script belum dipasang. Gunakan tombol Cetak / Salin Laporan atau pasang URL Web App.';
+      } else if (gameState.reportSubmitted) {
+        syncIcon.textContent = '✅';
+        syncText.textContent = 'Laporan nilai telah tersimpan di Google Sheets guru.';
+      } else {
+        syncIcon.textContent = '☁️';
+        syncText.textContent = 'Siap dikirim ke Google Sheets guru. Klik tombol di samping untuk mengirim.';
+      }
+    }
+
+    async function sendReportToSheets(isManual = false) {
+      if (isManual) playSound('click');
+
+      const syncBanner = document.getElementById('sheets-sync-banner');
+      const syncText = document.getElementById('sheets-sync-text');
+      const syncIcon = document.getElementById('sheets-sync-icon');
+      const btnSend = document.getElementById('btn-send-sheets');
+
+      if (!GOOGLE_SCRIPT_URL) {
+        showToast('URL Apps Script belum dikonfigurasi di kode HTML.', 'error');
+        return;
+      }
+
+      const acc = Math.round((gameState.lvl2.correctScans / gameState.lvl2.totalScans) * 100);
+      const payload = {
+        nama: gameState.student.name,
+        kelas: gameState.student.className,
+        sekolah: gameState.student.school,
+        skor: gameState.score,
+        predikat: getCalculatedRank(),
+        statusLvl1: gameState.lvl1.completed ? `Tuntas (${gameState.lvl1.placedCount}/9)` : `${gameState.lvl1.placedCount}/9`,
+        akurasiLvl2: `${acc}% (${gameState.lvl2.correctScans}/${gameState.lvl2.totalScans})`,
+        jawabanKritisLvl2: gameState.lvl2.criticalAnswer || '-',
+        masalahLvl3: gameState.lvl3.envProblem || '-',
+        rekomendasiLvl3: gameState.lvl3.envRecommendation || '-',
+        argumenLvl3: gameState.lvl3.envArgument || '-',
+        refleksi: gameState.reflections.length > 0 ? gameState.reflections.join(' | ') : '-'
+      };
+
+      btnSend.disabled = true;
+      btnSend.textContent = '⏳ Mengirim...';
+      syncIcon.textContent = '⏳';
+      syncText.textContent = 'Sedang mengirim data laporan ke Google Sheets guru...';
+
+      try {
+        // Menggunakan text/plain agar terhindar dari blokir preflight CORS pada Google Apps Script
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          gameState.reportSubmitted = true;
+          playSound('correct');
+          syncBanner.className = 'no-print bg-emerald-950/60 border border-emerald-500/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+          syncIcon.textContent = '✅';
+          syncText.textContent = 'Berhasil! Laporan nilai dan jawabanmu sudah tercatat di Google Sheets guru.';
+          btnSend.textContent = '✓ Terkirim (Kirim Ulang)';
+          showToast('✅ Laporan nilai berhasil dikirim ke Google Sheets!', 'success');
+        } else {
+          throw new Error(result.message || 'Gagal memproses data di server.');
+        }
+      } catch (err) {
+        console.error('Apps Script Error:', err);
+        playSound('wrong');
+        syncBanner.className = 'no-print bg-rose-950/60 border border-rose-500/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+        syncIcon.textContent = '❌';
+        syncText.textContent = 'Gagal mengirim ke Google Sheets. Periksa koneksi internet atau izin akses Web App.';
+        btnSend.textContent = '🔄 Coba Kirim Ulang';
+        showToast('Gagal mengirim ke Google Sheets. Coba lagi atau simpan PDF.', 'error');
+      } finally {
+        btnSend.disabled = false;
+      }
+    }
+
+    function copyReportSummary() {
+      playSound('click');
+      const acc = Math.round((gameState.lvl2.correctScans / gameState.lvl2.totalScans) * 100);
+      const textToCopy = [
+        '=== RAPOR DETEKTIF EKSPEDISI NALAR ===',
+        `Nama: ${gameState.student.name}`,
+        `Kelas: ${gameState.student.className}`,
+        `Sekolah: ${gameState.student.school}`,
+        `Total Skor: ${gameState.score} | Akurasi Fakta/Opini: ${acc}%`,
+        '',
+        '[Evaluasi Kritis Level 2]',
+        gameState.lvl2.criticalAnswer || '-',
+        '',
+        '[Aksi Nyata Lingkungan Sekitar Level 3]',
+        `1. Masalah: ${gameState.lvl3.envProblem || '-'}`,
+        `2. Rekomendasi: ${gameState.lvl3.envRecommendation || '-'}`,
+        `3. Argumen: ${gameState.lvl3.envArgument || '-'}`
+      ].join('\n');
+
+      const tempArea = document.createElement('textarea');
+      tempArea.value = textToCopy;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      try {
+        document.execCommand('copy');
+        showToast('📋 Ringkasan Rapor berhasil disalin ke clipboard!', 'success');
+      } catch (err) {
+        showToast('Gagal menyalin otomatis. Gunakan tombol Cetak / Simpan PDF.', 'error');
+      }
+      document.body.removeChild(tempArea);
+    }
+
+    window.onload = function() {
+      updateHUD();
+    };
+  </script>
+</body>
+</html>
