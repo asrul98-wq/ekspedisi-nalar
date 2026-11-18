@@ -97,6 +97,9 @@
         <button onclick="fetchSheetData()" id="btn-refresh" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md">
           <span id="refresh-icon">🔄</span> <span>Segarkan Data</span>
         </button>
+        <button onclick="openUrlModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition" title="Ubah URL Google Apps Script jika membuat deployment baru">
+          <span>⚙️</span> <span>URL Script</span>
+        </button>
         <button onclick="exportToCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition">
           <span>📥</span> <span>Unduh CSV / Excel</span>
         </button>
@@ -108,22 +111,27 @@
   </header>
 
   <!-- ========================================================================
-       BANNER PEMBERITAHUAN KONEKSI / MODE DEMO
+       BANNER PEMBERITAHUAN KONEKSI / DIAGNOSTIK
        ======================================================================== -->
   <div id="setup-alert" class="no-print hidden max-w-7xl w-full mx-auto px-4 sm:px-6 pt-5">
-    <div class="bg-amber-950/60 border border-amber-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="bg-amber-950/70 border border-amber-500/50 rounded-2xl p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
       <div class="flex items-start gap-3">
         <span class="text-2xl">⚠️</span>
         <div>
-          <h3 class="text-sm font-extrabold text-amber-300">Apps Script Belum Mengembalikan Data JSON</h3>
-          <p id="setup-alert-msg" class="text-xs text-amber-100/90 mt-0.5 leading-relaxed">
-            Pastikan fungsi <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">doGet(e)</code> pada Google Apps Script sudah diperbarui dan di-deploy sebagai <strong>Versi Baru (New version)</strong>.
+          <h3 id="setup-alert-title" class="text-sm font-extrabold text-amber-300">Apps Script Belum Mengembalikan Data JSON</h3>
+          <p id="setup-alert-msg" class="text-xs text-amber-100/90 mt-1 leading-relaxed">
+            Pastikan fungsi <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">doGet(e)</code> pada Google Apps Script sudah diperbarui, lalu klik <strong>Terapkan (Deploy) > Kelola deployment > Edit (ikon pensil) > pilih Versi baru (New version) > Terapkan</strong>.
           </p>
         </div>
       </div>
-      <button onclick="loadDemoData()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold shrink-0 transition">
-        👁️ Tampilkan Data Simulasi
-      </button>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <button onclick="openUrlModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-bold transition">
+          ⚙️ Cek / Ganti URL
+        </button>
+        <button onclick="loadDemoData()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition">
+          👁️ Tampilkan Simulasi
+        </button>
+      </div>
     </div>
   </div>
 
@@ -277,6 +285,39 @@
   </main>
 
   <!-- ========================================================================
+       MODAL PENGATURAN URL GOOGLE APPS SCRIPT
+       ======================================================================== -->
+  <div id="url-modal" class="no-print fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-pop space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-extrabold text-white">⚙️ Pengaturan URL Google Apps Script</h3>
+        <button onclick="closeUrlModal()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">✕</button>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Jika Anda tadi menekan <strong>Deployment baru</strong> di Apps Script dan mendapat URL baru berakhiran <code class="text-emerald-400">/exec</code>, tempelkan URL tersebut di bawah ini lalu klik <strong>Simpan & Hubungkan</strong>:
+      </p>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1.5">Web App URL (/exec):</label>
+        <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+          class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-emerald-500" />
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <button onclick="resetScriptUrl()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+          Reset ke URL Awal
+        </button>
+        <div class="flex gap-2">
+          <button onclick="closeUrlModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">
+            Batal
+          </button>
+          <button onclick="saveScriptUrl()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white">
+            Simpan & Hubungkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL DETAIL JAWABAN HOTS & AKSI NYATA SISWA (UNTUK PENILAIAN GURU)
        ======================================================================== -->
   <div id="detail-modal" class="no-print fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center p-4">
@@ -360,8 +401,39 @@
        SCRIPT LOGIKA PENGAMBILAN DATA GOOGLE SHEETS & VISUALISASI
        ======================================================================== -->
   <script>
-    // URL Google Apps Script milik Anda (sama dengan yang ada di file game)
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0b8YrjD5WwaYXob91KB_i3obyWWxcyzxweXwQ7mNCN5ffa0FvaZs51pSWAAimXZ3D/exec";
+    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0b8YrjD5WwaYXob91KB_i3obyWWxcyzxweXwQ7mNCN5ffa0FvaZs51pSWAAimXZ3D/exec";
+
+    function getActiveScriptUrl() {
+      return localStorage.getItem('ekspedisi_nalar_script_url') || DEFAULT_SCRIPT_URL;
+    }
+
+    function openUrlModal() {
+      document.getElementById('script-url-input').value = getActiveScriptUrl();
+      const modal = document.getElementById('url-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeUrlModal() {
+      const modal = document.getElementById('url-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveScriptUrl() {
+      const val = document.getElementById('script-url-input').value.trim();
+      if (!val || !val.startsWith('http')) return;
+      localStorage.setItem('ekspedisi_nalar_script_url', val);
+      closeUrlModal();
+      fetchSheetData();
+    }
+
+    function resetScriptUrl() {
+      localStorage.removeItem('ekspedisi_nalar_script_url');
+      document.getElementById('script-url-input').value = DEFAULT_SCRIPT_URL;
+      closeUrlModal();
+      fetchSheetData();
+    }
 
     let allRecords = [];
     let filteredRecords = [];
@@ -390,6 +462,8 @@
     async function fetchSheetData() {
       const badge = document.getElementById('connection-badge');
       const setupAlert = document.getElementById('setup-alert');
+      const alertTitle = document.getElementById('setup-alert-title');
+      const alertMsg = document.getElementById('setup-alert-msg');
       const refreshIcon = document.getElementById('refresh-icon');
 
       badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30';
@@ -397,23 +471,34 @@
       refreshIcon.classList.add('animate-spin');
 
       try {
-        const res = await fetch(GOOGLE_SCRIPT_URL);
+        // Tambahkan parameter cache-buster agar browser selalu mengambil data terbaru
+        const baseUrl = getActiveScriptUrl();
+        const fetchUrl = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+        const res = await fetch(fetchUrl);
         const text = await res.text();
 
         let json;
         try {
           json = JSON.parse(text);
         } catch (parseErr) {
-          // Jika doGet masih versi lama yang mengembalikan teks biasa
-          throw new Error('NOT_JSON');
+          throw new Error('NOT_JSON:' + text.slice(0, 120));
         }
 
         if (json.status === 'success' && Array.isArray(json.data)) {
-          setupAlert.classList.add('hidden');
           allRecords = json.data.reverse(); // Urutkan dari yang terbaru masuk
           badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
           badge.textContent = '● Live Terhubung';
           document.getElementById('last-updated').textContent = new Date().toLocaleTimeString('id-ID');
+
+          if (allRecords.length === 0) {
+            alertTitle.textContent = 'Terhubung ke Google Sheets, Namun Data Masih Kosong (0 Baris)';
+            alertMsg.innerHTML = 'Koneksi berhasil, tetapi sheet paling kiri di spreadsheet Anda belum memiliki baris data siswa. Pastikan tab sheet yang berisi nilai 2 siswa berada di <strong>urutan paling kiri</strong> di bagian bawah Google Sheets.';
+            setupAlert.classList.remove('hidden');
+          } else {
+            setupAlert.classList.add('hidden');
+          }
+
           populateClassFilter();
           applyFilters();
         } else {
@@ -423,13 +508,22 @@
         console.warn('Info koneksi dashboard:', err);
         badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30';
         badge.textContent = 'Perlu Update doGet';
+
+        if (String(err.message).includes('Server Laporan Ekspedisi Nalar')) {
+          alertTitle.textContent = 'Apps Script Masih Menjalankan Versi Lama';
+          alertMsg.innerHTML = 'Anda sudah menyimpan kode <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">doGet</code> baru, tetapi belum di-deploy ulang! Buka Apps Script > klik <strong>Terapkan (Deploy) > Kelola deployment > Edit (ikon pensil) > pilih Versi baru (New version) > Terapkan</strong>.';
+        } else {
+          alertTitle.textContent = 'Apps Script Belum Mengembalikan Data JSON';
+          alertMsg.innerHTML = 'Pastikan fungsi <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">doGet(e)</code> sudah diperbarui dan di-deploy sebagai <strong>Versi baru (New version)</strong> dengan akses <strong>Siapa saja (Anyone)</strong>.';
+        }
+
         setupAlert.classList.remove('hidden');
 
         if (allRecords.length === 0) {
           document.getElementById('students-table-body').innerHTML = `
             <tr>
               <td colspan="8" class="py-10 text-center text-slate-400">
-                Belum dapat membaca data JSON dari Google Sheets. Klik tombol <strong>"Tampilkan Data Simulasi"</strong> di atas untuk melihat pratinjau dashboard, atau perbarui kode <code class="text-emerald-400">doGet</code> pada Apps Script Anda.
+                Belum dapat membaca data JSON dari Google Sheets. Ikuti petunjuk pada kotak peringatan kuning di atas, lalu klik <strong>Segarkan Data</strong>.
               </td>
             </tr>
           `;
@@ -476,51 +570,6 @@
           rekomendasiLvl3: 'Pembuatan lubang biopori dan komposter komunal untuk mengolah sampah organik menjadi pupuk.',
           argumenLvl3: 'Asap pembakaran sampah mencemari udara dan memicu ISPA, sedangkan komposter mengubah limbah menjadi bernilai guna.',
           refleksi: 'Level 1: Melihat posisi dan fungsi paragraf'
-        },
-        {
-          waktu: new Date(Date.now() - 7200000).toISOString(),
-          nama: 'Dimas Saputra',
-          kelas: 'X-A',
-          sekolah: 'SMAN 1 Nusantara',
-          skor: 1120,
-          predikat: 'Analis Muda Andal',
-          statusLvl1: 'Tuntas (9/9)',
-          akurasiLvl2: '75% (6/8)',
-          jawabanKritisLvl2: 'Masih kurang efektif karena kesadaran masyarakat menjaga drainase dan hutan lindung belum merata.',
-          masalahLvl3: 'Kurangnya pohon peneduh di area parkir dan halaman belakang sekolah.',
-          rekomendasiLvl3: 'Program satu siswa satu tanaman produktif untuk penghijauan area sekolah.',
-          argumenLvl3: 'Vegetasi tanaman membantu menyerap air hujan ke dalam tanah dan menurunkan suhu udara lingkungan.',
-          refleksi: 'Level 2: Mendeteksi kata subjektif seperti seharusnya'
-        },
-        {
-          waktu: new Date(Date.now() - 10800000).toISOString(),
-          nama: 'Siti Aisyah',
-          kelas: 'X-C',
-          sekolah: 'SMAN 1 Nusantara',
-          skor: 1450,
-          predikat: 'Detektif Utama Nalar Kritis',
-          statusLvl1: 'Tuntas (9/9)',
-          akurasiLvl2: '100% (8/8)',
-          jawabanKritisLvl2: 'Belum optimal di lapangan akibat eksploitasi sumber daya alam yang masih mengutamakan keuntungan ekonomi jangka pendek.',
-          masalahLvl3: 'Pemborosan penggunaan air bersih dan listrik di ruang kelas setelah jam pelajaran usai.',
-          rekomendasiLvl3: 'Membentuk piket duta hemat energi di setiap kelas dan memasang stiker pengingat di sakelar serta keran.',
-          argumenLvl3: 'Penghematan energi mengurangi emisi karbon pembangkit listrik dan menjaga ketersediaan air tanah.',
-          refleksi: 'Level 1 & 2 tuntas dengan teliti'
-        },
-        {
-          waktu: new Date(Date.now() - 14400000).toISOString(),
-          nama: 'Fajar Nugroho',
-          kelas: 'X-B',
-          sekolah: 'SMAN 1 Nusantara',
-          skor: 760,
-          predikat: 'Penjelajah Teks Eksposisi',
-          statusLvl1: 'Tuntas (9/9)',
-          akurasiLvl2: '63% (5/8)',
-          jawabanKritisLvl2: 'Belum efektif karena masih banyak banjir terjadi di kota besar.',
-          masalahLvl3: 'Sampah kertas bekas tugas menumpuk di laci meja kelas.',
-          rekomendasiLvl3: 'Menyediakan kotak daur ulang kertas di tiap kelas.',
-          argumenLvl3: 'Kertas bekas dapat didaur ulang menjadi kerajinan atau kertas baru sehingga mengurangi penebangan pohon.',
-          refleksi: '-'
         }
       ];
 
@@ -532,7 +581,7 @@
     function populateClassFilter() {
       const select = document.getElementById('filter-class');
       const currentVal = select.value;
-      const classes = [...new Set(allRecords.map(r => (r.kelas || '').trim()).filter(Boolean))].sort();
+      const classes = [...new Set(allRecords.map(r => String(r.kelas || '').trim()).filter(Boolean))].sort();
 
       select.innerHTML = '<option value="ALL">Semua Kelas</option>' +
         classes.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -549,9 +598,13 @@
       const rankQ = document.getElementById('filter-rank').value;
 
       filteredRecords = allRecords.filter(r => {
-        const matchName = !searchQ || (r.nama || '').toLowerCase().includes(searchQ);
-        const matchClass = classQ === 'ALL' || (r.kelas || '').trim() === classQ;
-        const matchRank = rankQ === 'ALL' || (r.predikat || '').trim() === rankQ;
+        const namaStr = String(r.nama || '').toLowerCase();
+        const kelasStr = String(r.kelas || '').trim();
+        const predikatStr = String(r.predikat || '').trim();
+
+        const matchName = !searchQ || namaStr.includes(searchQ);
+        const matchClass = classQ === 'ALL' || kelasStr === classQ;
+        const matchRank = rankQ === 'ALL' || predikatStr === rankQ;
         return matchName && matchClass && matchRank;
       });
 
@@ -566,7 +619,7 @@
       const total = filteredRecords.length;
       document.getElementById('kpi-total').textContent = total;
 
-      const uniqueClasses = new Set(filteredRecords.map(r => r.kelas).filter(Boolean)).size;
+      const uniqueClasses = new Set(filteredRecords.map(r => String(r.kelas || '').trim()).filter(Boolean)).size;
       document.getElementById('kpi-classes-count').textContent = `Dari ${uniqueClasses} kelas terdaftar`;
 
       if (total === 0) {
@@ -597,10 +650,9 @@
 
     // Perbarui Grafik Chart.js
     function updateCharts() {
-      // 1. Rata-rata skor per kelas
       const classMap = {};
       filteredRecords.forEach(r => {
-        const cls = (r.kelas || 'Tanpa Kelas').trim();
+        const cls = String(r.kelas || 'Tanpa Kelas').trim();
         if (!classMap[cls]) classMap[cls] = [];
         classMap[cls].push(Number(r.skor) || 0);
       });
@@ -629,9 +681,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: {
               beginAtZero: true,
@@ -646,14 +696,13 @@
         }
       });
 
-      // 2. Distribusi Predikat
       const rankCounts = {
         'Detektif Utama Nalar Kritis': 0,
         'Analis Muda Andal': 0,
         'Penjelajah Teks Eksposisi': 0
       };
       filteredRecords.forEach(r => {
-        const p = (r.predikat || '').trim();
+        const p = String(r.predikat || '').trim();
         if (rankCounts[p] !== undefined) rankCounts[p]++;
         else rankCounts['Penjelajah Teks Eksposisi']++;
       });
@@ -727,7 +776,7 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="py-10 text-center text-slate-400">
-              Tidak ada data siswa yang sesuai dengan filter pencarian saat ini.
+              Belum ada baris data siswa yang terbaca. Periksa kotak pemberitahuan di atas untuk memastikan status koneksi Apps Script.
             </td>
           </tr>
         `;
@@ -735,9 +784,10 @@
       }
 
       tbody.innerHTML = filteredRecords.map((row, idx) => {
+        const predStr = String(row.predikat || '-');
         let rankBadge = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
-        if ((row.predikat || '').includes('Utama')) rankBadge = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
-        else if ((row.predikat || '').includes('Andal')) rankBadge = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+        if (predStr.includes('Utama')) rankBadge = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        else if (predStr.includes('Andal')) rankBadge = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
 
         return `
           <tr class="hover:bg-slate-800/40 transition">
@@ -747,7 +797,7 @@
             <td class="py-3.5 px-4 text-right font-mono font-extrabold text-emerald-400 print-dark">${row.skor || 0}</td>
             <td class="py-3.5 px-4">
               <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${rankBadge}">
-                ${row.predikat || '-'}
+                ${predStr}
               </span>
             </td>
             <td class="py-3.5 px-4 font-mono text-xs text-cyan-300 print-dark">${row.akurasiLvl2 || '-'}</td>
@@ -790,7 +840,7 @@
       modal.classList.remove('flex');
     }
 
-    // Ekspor data terfilter ke file CSV (bisa langsung dibuka di Excel)
+    // Ekspor data terfilter ke file CSV
     function exportToCSV() {
       if (filteredRecords.length === 0) return;
 
