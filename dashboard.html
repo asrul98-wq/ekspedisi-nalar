@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Guru • Ekspedisi Nalar</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js untuk Visualisasi Grafik -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f1f5f9;
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 35%),
+        radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.08) 0%, transparent 35%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.7);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.96) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    @media print {
+      body { background: #fff !important; color: #0f172a !important; background-image: none !important; }
+      .no-print { display: none !important; }
+      .glass-card { background: #fff !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+      .print-dark { color: #0f172a !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- ========================================================================
+       HEADER DASHBOARD GURU
+       ======================================================================== -->
+  <header class="no-print sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">DASHBOARD ANALITIK GURU</h1>
+            <span id="connection-badge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              Menghubungkan...
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Rekapitulasi Real-Time • Game Edukasi <strong class="text-emerald-400">Ekspedisi Nalar</strong></p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="fetchSheetData()" id="btn-refresh" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md">
+          <span id="refresh-icon">🔄</span> <span>Segarkan Data</span>
+        </button>
+        <button onclick="exportToCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition">
+          <span>📥</span> <span>Unduh CSV / Excel</span>
+        </button>
+        <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition">
+          <span>🖨️</span> <span>Cetak</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       BANNER PEMBERITAHUAN KONEKSI / MODE DEMO
+       ======================================================================== -->
+  <div id="setup-alert" class="no-print hidden max-w-7xl w-full mx-auto px-4 sm:px-6 pt-5">
+    <div class="bg-amber-950/60 border border-amber-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">⚠️</span>
+        <div>
+          <h3 class="text-sm font-extrabold text-amber-300">Apps Script Belum Mengembalikan Data JSON</h3>
+          <p id="setup-alert-msg" class="text-xs text-amber-100/90 mt-0.5 leading-relaxed">
+            Pastikan fungsi <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">doGet(e)</code> pada Google Apps Script sudah diperbarui dan di-deploy sebagai <strong>Versi Baru (New version)</strong>.
+          </p>
+        </div>
+      </div>
+      <button onclick="loadDemoData()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold shrink-0 transition">
+        👁️ Tampilkan Data Simulasi
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       KONTEN UTAMA DASHBOARD
+       ======================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- 1. FILTER BAR & PENCARIAN -->
+    <section class="no-print glass-card rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2.5 flex-1">
+        <!-- Cari Nama -->
+        <div class="relative flex-1 min-w-[200px] max-w-xs">
+          <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+          <input type="text" id="filter-search" oninput="applyFilters()" placeholder="Cari nama siswa..."
+            class="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <!-- Filter Kelas -->
+        <select id="filter-class" onchange="applyFilters()"
+          class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">Semua Kelas</option>
+        </select>
+
+        <!-- Filter Predikat -->
+        <select id="filter-rank" onchange="applyFilters()"
+          class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">Semua Predikat</option>
+          <option value="Detektif Utama Nalar Kritis">Detektif Utama Nalar Kritis</option>
+          <option value="Analis Muda Andal">Analis Muda Andal</option>
+          <option value="Penjelajah Teks Eksposisi">Penjelajah Teks Eksposisi</option>
+        </select>
+      </div>
+
+      <div class="text-xs text-slate-400 font-mono self-end md:self-center">
+        Terakhir diperbarui: <span id="last-updated" class="text-slate-200">-</span>
+      </div>
+    </section>
+
+    <!-- 2. KARTU KPI RINGKASAN (4 METRIK UTAMA) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- KPI 1: Total Siswa -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Peserta Misi</span>
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-base">👥</span>
+        </div>
+        <div class="text-3xl font-mono font-extrabold text-white print-dark" id="kpi-total">0</div>
+        <p class="text-xs text-slate-400 mt-1" id="kpi-classes-count">Dari 0 kelas terdaftar</p>
+      </div>
+
+      <!-- KPI 2: Rata-rata Skor -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Rata-Rata Skor</span>
+          <span class="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-base">🎯</span>
+        </div>
+        <div class="text-3xl font-mono font-extrabold text-cyan-400 print-dark" id="kpi-avg-score">0</div>
+        <p class="text-xs text-slate-400 mt-1">Skor tertinggi: <strong id="kpi-max-score" class="text-slate-200">0</strong></p>
+      </div>
+
+      <!-- KPI 3: Rata-rata Akurasi Fakta/Opini -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Akurasi Fakta vs Opini</span>
+          <span class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-base">🔬</span>
+        </div>
+        <div class="text-3xl font-mono font-extrabold text-amber-400 print-dark" id="kpi-avg-accuracy">0%</div>
+        <p class="text-xs text-slate-400 mt-1">Rata-rata ketepatan Level 2</p>
+      </div>
+
+      <!-- KPI 4: Ketuntasan Aksi Nyata -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Detektif Utama (≥1300)</span>
+          <span class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center text-base">🏆</span>
+        </div>
+        <div class="text-3xl font-mono font-extrabold text-purple-400 print-dark" id="kpi-top-rank">0</div>
+        <p class="text-xs text-slate-400 mt-1" id="kpi-top-pct">0% dari total siswa</p>
+      </div>
+    </section>
+
+    <!-- 3. VISUALISASI GRAFIK & LEADERBOARD -->
+    <section class="grid lg:grid-cols-12 gap-5">
+      <!-- Grafik 1: Rata-rata Skor per Kelas -->
+      <div class="lg:col-span-5 glass-card rounded-2xl p-5 flex flex-col">
+        <h3 class="text-sm font-extrabold text-white print-dark mb-1">Perbandingan Skor Rata-Rata per Kelas</h3>
+        <p class="text-xs text-slate-400 mb-4">Evaluasi capaian kolektif antar rombongan belajar</p>
+        <div class="relative flex-1 min-h-[220px]">
+          <canvas id="chart-class-scores"></canvas>
+        </div>
+      </div>
+
+      <!-- Grafik 2: Distribusi Predikat Nalar -->
+      <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
+        <h3 class="text-sm font-extrabold text-white print-dark mb-1">Distribusi Predikat Nalar</h3>
+        <p class="text-xs text-slate-400 mb-4">Proporsi tingkat penguasaan literasi kritis siswa</p>
+        <div class="relative flex-1 min-h-[220px] flex items-center justify-center">
+          <canvas id="chart-rank-dist"></canvas>
+        </div>
+      </div>
+
+      <!-- Papan Peringkat Top 5 Analis Muda -->
+      <div class="lg:col-span-3 glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-extrabold text-white print-dark">Top 5 Analis Muda</h3>
+            <p class="text-xs text-slate-400">Peraih skor tertinggi</p>
+          </div>
+          <span class="text-xl">🥇</span>
+        </div>
+        <div id="leaderboard-list" class="space-y-2.5 flex-1">
+          <!-- Diisi dinamis -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. TABEL REKAPITULASI NILAI & JAWABAN ESAI SISWA -->
+    <section class="glass-card rounded-2xl overflow-hidden">
+      <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h3 class="text-base font-extrabold text-white print-dark">Daftar Hasil Investigasi & Penilaian HOTS Siswa</h3>
+          <p class="text-xs text-slate-400">Klik tombol <strong class="text-cyan-300">"Bedah Jawaban"</strong> untuk membaca esai kritis Level 2 dan proyek aksi nyata Level 3 setiap siswa.</p>
+        </div>
+        <span class="text-xs font-mono text-slate-400">Menampilkan <strong id="table-count" class="text-white">0</strong> data</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-950/90 border-b border-slate-800 text-[11px] font-mono uppercase text-slate-400">
+              <th class="py-3.5 px-4">No</th>
+              <th class="py-3.5 px-4">Nama Siswa</th>
+              <th class="py-3.5 px-4">Kelas</th>
+              <th class="py-3.5 px-4 text-right">Skor</th>
+              <th class="py-3.5 px-4">Predikat Nalar</th>
+              <th class="py-3.5 px-4">Akurasi Fakta</th>
+              <th class="py-3.5 px-4">Waktu Kirim</th>
+              <th class="no-print py-3.5 px-4 text-center">Jawaban Esai & Proyek</th>
+            </tr>
+          </thead>
+          <tbody id="students-table-body" class="divide-y divide-slate-800/70 text-xs sm:text-sm">
+            <tr>
+              <td colspan="8" class="py-10 text-center text-slate-400">Memuat data dari Google Sheets...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       MODAL DETAIL JAWABAN HOTS & AKSI NYATA SISWA (UNTUK PENILAIAN GURU)
+       ======================================================================== -->
+  <div id="detail-modal" class="no-print fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl animate-pop">
+      <!-- Header Modal -->
+      <div class="p-5 sm:p-6 border-b border-slate-800 flex items-start justify-between gap-4">
+        <div>
+          <span id="modal-rank" class="inline-block text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 mb-1">
+            Predikat
+          </span>
+          <h3 id="modal-name" class="text-xl font-extrabold text-white">Nama Siswa</h3>
+          <p id="modal-meta" class="text-xs text-slate-400 mt-0.5">Kelas • Sekolah • Waktu</p>
+        </div>
+        <button onclick="closeDetailModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">✕</button>
+      </div>
+
+      <!-- Isi Jawaban Siswa -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
+        <!-- Ringkasan Skor -->
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-[10px] text-slate-400 uppercase">Total Skor</div>
+            <div id="modal-score" class="text-lg font-mono font-extrabold text-emerald-400 mt-0.5">0</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-[10px] text-slate-400 uppercase">Struktur Lvl 1</div>
+            <div id="modal-lvl1" class="text-sm font-mono font-bold text-slate-200 mt-1">-</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-[10px] text-slate-400 uppercase">Akurasi Lvl 2</div>
+            <div id="modal-lvl2" class="text-sm font-mono font-bold text-cyan-400 mt-1">-</div>
+          </div>
+        </div>
+
+        <!-- Jawaban Kritis Level 2 (HOTS) -->
+        <div class="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4">
+          <div class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1.5">
+            🔍 Jawaban Uji Nalar Kritis Level 2 (Evaluasi Efektivitas Rekomendasi):
+          </div>
+          <p id="modal-critical" class="text-slate-200 leading-relaxed whitespace-pre-line">-</p>
+        </div>
+
+        <!-- Rancangan Proyek Lingkungan Level 3 -->
+        <div class="bg-slate-950 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+          <div class="text-xs font-bold text-amber-400 uppercase tracking-wider">
+            🌱 Proyek Mini Aksi Nyata Lingkungan Sekitar (Level 3):
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-rose-400">1. Identifikasi Masalah Sekitar:</div>
+            <p id="modal-env-problem" class="text-slate-300 mt-0.5">-</p>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-amber-300">2. Rekomendasi Solusi Konkret:</div>
+            <p id="modal-env-rec" class="text-slate-300 mt-0.5">-</p>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-emerald-400">3. Argumen Logis & Data Pendukung:</div>
+            <p id="modal-env-arg" class="text-slate-300 mt-0.5">-</p>
+          </div>
+        </div>
+
+        <!-- Refleksi Metakognitif -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+          <div class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">
+            🧘‍♂️ Catatan Refleksi Metakognitif Siswa:
+          </div>
+          <p id="modal-reflection" class="text-slate-300 leading-relaxed">-</p>
+        </div>
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-4 border-t border-slate-800 flex justify-end">
+        <button onclick="closeDetailModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">
+          Tutup Detail
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       SCRIPT LOGIKA PENGAMBILAN DATA GOOGLE SHEETS & VISUALISASI
+       ======================================================================== -->
+  <script>
+    // URL Google Apps Script milik Anda (sama dengan yang ada di file game)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0b8YrjD5WwaYXob91KB_i3obyWWxcyzxweXwQ7mNCN5ffa0FvaZs51pSWAAimXZ3D/exec";
+
+    let allRecords = [];
+    let filteredRecords = [];
+    let classChartInstance = null;
+    let rankChartInstance = null;
+
+    // Parse persentase angka dari string seperti "88% (7/8)" -> 88
+    function parseAccuracyNumber(accStr) {
+      if (!accStr) return 0;
+      const match = String(accStr).match(/(\d+(\.\d+)?)\s*%/);
+      return match ? parseFloat(match[1]) : 0;
+    }
+
+    // Format tanggal ke Bahasa Indonesia
+    function formatDateIndo(dateVal) {
+      if (!dateVal) return '-';
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return String(dateVal);
+      return d.toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    // Ambil data dari Google Apps Script (doGet)
+    async function fetchSheetData() {
+      const badge = document.getElementById('connection-badge');
+      const setupAlert = document.getElementById('setup-alert');
+      const refreshIcon = document.getElementById('refresh-icon');
+
+      badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      badge.textContent = 'Menyinkronkan...';
+      refreshIcon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL);
+        const text = await res.text();
+
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (parseErr) {
+          // Jika doGet masih versi lama yang mengembalikan teks biasa
+          throw new Error('NOT_JSON');
+        }
+
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          setupAlert.classList.add('hidden');
+          allRecords = json.data.reverse(); // Urutkan dari yang terbaru masuk
+          badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+          badge.textContent = '● Live Terhubung';
+          document.getElementById('last-updated').textContent = new Date().toLocaleTimeString('id-ID');
+          populateClassFilter();
+          applyFilters();
+        } else {
+          throw new Error(json.message || 'Format data tidak sesuai');
+        }
+      } catch (err) {
+        console.warn('Info koneksi dashboard:', err);
+        badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30';
+        badge.textContent = 'Perlu Update doGet';
+        setupAlert.classList.remove('hidden');
+
+        if (allRecords.length === 0) {
+          document.getElementById('students-table-body').innerHTML = `
+            <tr>
+              <td colspan="8" class="py-10 text-center text-slate-400">
+                Belum dapat membaca data JSON dari Google Sheets. Klik tombol <strong>"Tampilkan Data Simulasi"</strong> di atas untuk melihat pratinjau dashboard, atau perbarui kode <code class="text-emerald-400">doGet</code> pada Apps Script Anda.
+              </td>
+            </tr>
+          `;
+        }
+      } finally {
+        refreshIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // Data simulasi agar guru bisa langsung mencoba fitur dashboard
+    function loadDemoData() {
+      const badge = document.getElementById('connection-badge');
+      badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30';
+      badge.textContent = 'Mode Simulasi';
+      document.getElementById('last-updated').textContent = 'Data Simulasi';
+
+      allRecords = [
+        {
+          waktu: new Date().toISOString(),
+          nama: 'Nadia Putri Maharani',
+          kelas: 'X-A',
+          sekolah: 'SMAN 1 Nusantara',
+          skor: 1525,
+          predikat: 'Detektif Utama Nalar Kritis',
+          statusLvl1: 'Tuntas (9/9)',
+          akurasiLvl2: '100% (8/8)',
+          jawabanKritisLvl2: 'Rekomendasi pembangunan berkelanjutan belum berjalan efektif karena penebangan hutan masih mencapai jutaan hektare dan tata ruang kota kurang memperhatikan daerah resapan air.',
+          masalahLvl3: 'Tumpukan sampah plastik sekali pakai di selokan sekitar sekolah yang memicu genangan air saat hujan.',
+          rekomendasiLvl3: 'Gerakan wajib membawa tumbler serta penyediaan bank sampah terpilah di setiap sudut kelas.',
+          argumenLvl3: 'Plastik membutuhkan ratusan tahun untuk terurai. Dengan penggunaan tumbler, limbah botol plastik harian sekolah dapat berkurang lebih dari 65%.',
+          refleksi: 'Level 1: Mencari ciri bahasa tesis, argumen, dan rekomendasi | Level 2: Memeriksa data angka terukur'
+        },
+        {
+          waktu: new Date(Date.now() - 3600000).toISOString(),
+          nama: 'Raka Pratama Wijaya',
+          kelas: 'X-B',
+          sekolah: 'SMAN 1 Nusantara',
+          skor: 1380,
+          predikat: 'Detektif Utama Nalar Kritis',
+          statusLvl1: 'Tuntas (9/9)',
+          akurasiLvl2: '88% (7/8)',
+          jawabanKritisLvl2: 'Belum efektif karena pengawasan terhadap alih fungsi lahan hijau masih lemah sehingga banjir terus berulang setiap tahun.',
+          masalahLvl3: 'Pembakaran sampah dedaunan dan plastik secara terbuka di lingkungan permukiman warga.',
+          rekomendasiLvl3: 'Pembuatan lubang biopori dan komposter komunal untuk mengolah sampah organik menjadi pupuk.',
+          argumenLvl3: 'Asap pembakaran sampah mencemari udara dan memicu ISPA, sedangkan komposter mengubah limbah menjadi bernilai guna.',
+          refleksi: 'Level 1: Melihat posisi dan fungsi paragraf'
+        },
+        {
+          waktu: new Date(Date.now() - 7200000).toISOString(),
+          nama: 'Dimas Saputra',
+          kelas: 'X-A',
+          sekolah: 'SMAN 1 Nusantara',
+          skor: 1120,
+          predikat: 'Analis Muda Andal',
+          statusLvl1: 'Tuntas (9/9)',
+          akurasiLvl2: '75% (6/8)',
+          jawabanKritisLvl2: 'Masih kurang efektif karena kesadaran masyarakat menjaga drainase dan hutan lindung belum merata.',
+          masalahLvl3: 'Kurangnya pohon peneduh di area parkir dan halaman belakang sekolah.',
+          rekomendasiLvl3: 'Program satu siswa satu tanaman produktif untuk penghijauan area sekolah.',
+          argumenLvl3: 'Vegetasi tanaman membantu menyerap air hujan ke dalam tanah dan menurunkan suhu udara lingkungan.',
+          refleksi: 'Level 2: Mendeteksi kata subjektif seperti seharusnya'
+        },
+        {
+          waktu: new Date(Date.now() - 10800000).toISOString(),
+          nama: 'Siti Aisyah',
+          kelas: 'X-C',
+          sekolah: 'SMAN 1 Nusantara',
+          skor: 1450,
+          predikat: 'Detektif Utama Nalar Kritis',
+          statusLvl1: 'Tuntas (9/9)',
+          akurasiLvl2: '100% (8/8)',
+          jawabanKritisLvl2: 'Belum optimal di lapangan akibat eksploitasi sumber daya alam yang masih mengutamakan keuntungan ekonomi jangka pendek.',
+          masalahLvl3: 'Pemborosan penggunaan air bersih dan listrik di ruang kelas setelah jam pelajaran usai.',
+          rekomendasiLvl3: 'Membentuk piket duta hemat energi di setiap kelas dan memasang stiker pengingat di sakelar serta keran.',
+          argumenLvl3: 'Penghematan energi mengurangi emisi karbon pembangkit listrik dan menjaga ketersediaan air tanah.',
+          refleksi: 'Level 1 & 2 tuntas dengan teliti'
+        },
+        {
+          waktu: new Date(Date.now() - 14400000).toISOString(),
+          nama: 'Fajar Nugroho',
+          kelas: 'X-B',
+          sekolah: 'SMAN 1 Nusantara',
+          skor: 760,
+          predikat: 'Penjelajah Teks Eksposisi',
+          statusLvl1: 'Tuntas (9/9)',
+          akurasiLvl2: '63% (5/8)',
+          jawabanKritisLvl2: 'Belum efektif karena masih banyak banjir terjadi di kota besar.',
+          masalahLvl3: 'Sampah kertas bekas tugas menumpuk di laci meja kelas.',
+          rekomendasiLvl3: 'Menyediakan kotak daur ulang kertas di tiap kelas.',
+          argumenLvl3: 'Kertas bekas dapat didaur ulang menjadi kerajinan atau kertas baru sehingga mengurangi penebangan pohon.',
+          refleksi: '-'
+        }
+      ];
+
+      populateClassFilter();
+      applyFilters();
+    }
+
+    // Isi dropdown filter kelas secara dinamis dari data
+    function populateClassFilter() {
+      const select = document.getElementById('filter-class');
+      const currentVal = select.value;
+      const classes = [...new Set(allRecords.map(r => (r.kelas || '').trim()).filter(Boolean))].sort();
+
+      select.innerHTML = '<option value="ALL">Semua Kelas</option>' +
+        classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      if (classes.includes(currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    // Terapkan filter pencarian, kelas, dan predikat
+    function applyFilters() {
+      const searchQ = document.getElementById('filter-search').value.trim().toLowerCase();
+      const classQ = document.getElementById('filter-class').value;
+      const rankQ = document.getElementById('filter-rank').value;
+
+      filteredRecords = allRecords.filter(r => {
+        const matchName = !searchQ || (r.nama || '').toLowerCase().includes(searchQ);
+        const matchClass = classQ === 'ALL' || (r.kelas || '').trim() === classQ;
+        const matchRank = rankQ === 'ALL' || (r.predikat || '').trim() === rankQ;
+        return matchName && matchClass && matchRank;
+      });
+
+      updateKPIs();
+      updateCharts();
+      updateLeaderboard();
+      renderTable();
+    }
+
+    // Perbarui 4 kartu KPI utama
+    function updateKPIs() {
+      const total = filteredRecords.length;
+      document.getElementById('kpi-total').textContent = total;
+
+      const uniqueClasses = new Set(filteredRecords.map(r => r.kelas).filter(Boolean)).size;
+      document.getElementById('kpi-classes-count').textContent = `Dari ${uniqueClasses} kelas terdaftar`;
+
+      if (total === 0) {
+        document.getElementById('kpi-avg-score').textContent = '0';
+        document.getElementById('kpi-max-score').textContent = '0';
+        document.getElementById('kpi-avg-accuracy').textContent = '0%';
+        document.getElementById('kpi-top-rank').textContent = '0';
+        document.getElementById('kpi-top-pct').textContent = '0% dari total siswa';
+        return;
+      }
+
+      const scores = filteredRecords.map(r => Number(r.skor) || 0);
+      const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / total);
+      const maxScore = Math.max(...scores);
+
+      document.getElementById('kpi-avg-score').textContent = avgScore;
+      document.getElementById('kpi-max-score').textContent = maxScore;
+
+      const accs = filteredRecords.map(r => parseAccuracyNumber(r.akurasiLvl2));
+      const avgAcc = Math.round(accs.reduce((a, b) => a + b, 0) / total);
+      document.getElementById('kpi-avg-accuracy').textContent = `${avgAcc}%`;
+
+      const topCount = filteredRecords.filter(r => (Number(r.skor) || 0) >= 1300).length;
+      const topPct = Math.round((topCount / total) * 100);
+      document.getElementById('kpi-top-rank').textContent = topCount;
+      document.getElementById('kpi-top-pct').textContent = `${topPct}% dari total siswa`;
+    }
+
+    // Perbarui Grafik Chart.js
+    function updateCharts() {
+      // 1. Rata-rata skor per kelas
+      const classMap = {};
+      filteredRecords.forEach(r => {
+        const cls = (r.kelas || 'Tanpa Kelas').trim();
+        if (!classMap[cls]) classMap[cls] = [];
+        classMap[cls].push(Number(r.skor) || 0);
+      });
+
+      const classLabels = Object.keys(classMap).sort();
+      const classAvgs = classLabels.map(cls => {
+        const arr = classMap[cls];
+        return Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+      });
+
+      const ctxClass = document.getElementById('chart-class-scores').getContext('2d');
+      if (classChartInstance) classChartInstance.destroy();
+      classChartInstance = new Chart(ctxClass, {
+        type: 'bar',
+        data: {
+          labels: classLabels.length ? classLabels : ['Belum Ada Data'],
+          datasets: [{
+            label: 'Rata-rata Skor',
+            data: classAvgs.length ? classAvgs : [0],
+            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+            borderColor: '#10b981',
+            borderWidth: 1.5,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(148, 163, 184, 0.1)' },
+              ticks: { color: '#94a3b8', font: { size: 11 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#e2e8f0', font: { size: 11, weight: 'bold' } }
+            }
+          }
+        }
+      });
+
+      // 2. Distribusi Predikat
+      const rankCounts = {
+        'Detektif Utama Nalar Kritis': 0,
+        'Analis Muda Andal': 0,
+        'Penjelajah Teks Eksposisi': 0
+      };
+      filteredRecords.forEach(r => {
+        const p = (r.predikat || '').trim();
+        if (rankCounts[p] !== undefined) rankCounts[p]++;
+        else rankCounts['Penjelajah Teks Eksposisi']++;
+      });
+
+      const ctxRank = document.getElementById('chart-rank-dist').getContext('2d');
+      if (rankChartInstance) rankChartInstance.destroy();
+      rankChartInstance = new Chart(ctxRank, {
+        type: 'doughnut',
+        data: {
+          labels: ['Detektif Utama', 'Analis Muda', 'Penjelajah'],
+          datasets: [{
+            data: [
+              rankCounts['Detektif Utama Nalar Kritis'],
+              rankCounts['Analis Muda Andal'],
+              rankCounts['Penjelajah Teks Eksposisi']
+            ],
+            backgroundColor: ['#f59e0b', '#06b6d4', '#10b981'],
+            borderColor: '#0f172a',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#cbd5e1', padding: 14, font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    // Perbarui Papan Peringkat Top 5
+    function updateLeaderboard() {
+      const container = document.getElementById('leaderboard-list');
+      if (filteredRecords.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">Belum ada data peserta.</p>';
+        return;
+      }
+
+      const top5 = [...filteredRecords]
+        .sort((a, b) => (Number(b.skor) || 0) - (Number(a.skor) || 0))
+        .slice(0, 5);
+
+      const medals = ['🥇', '🥈', '🥉', '4', '5'];
+      container.innerHTML = top5.map((s, idx) => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/90 border border-slate-800/90">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-6 h-6 rounded-lg bg-slate-800 text-xs font-bold flex items-center justify-center shrink-0">
+              ${medals[idx]}
+            </span>
+            <div class="truncate">
+              <div class="text-xs font-bold text-white truncate">${s.nama || '-'}</div>
+              <div class="text-[10px] text-slate-400">${s.kelas || '-'}</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono font-extrabold text-emerald-400 ml-2 shrink-0">${s.skor || 0}</span>
+        </div>
+      `).join('');
+    }
+
+    // Render Tabel Rekap Siswa
+    function renderTable() {
+      const tbody = document.getElementById('students-table-body');
+      document.getElementById('table-count').textContent = filteredRecords.length;
+
+      if (filteredRecords.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-10 text-center text-slate-400">
+              Tidak ada data siswa yang sesuai dengan filter pencarian saat ini.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredRecords.map((row, idx) => {
+        let rankBadge = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        if ((row.predikat || '').includes('Utama')) rankBadge = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        else if ((row.predikat || '').includes('Andal')) rankBadge = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-3.5 px-4 font-mono text-xs text-slate-400">${idx + 1}</td>
+            <td class="py-3.5 px-4 font-bold text-white print-dark">${row.nama || '-'}</td>
+            <td class="py-3.5 px-4 text-slate-300 print-dark">${row.kelas || '-'}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-extrabold text-emerald-400 print-dark">${row.skor || 0}</td>
+            <td class="py-3.5 px-4">
+              <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${rankBadge}">
+                ${row.predikat || '-'}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-xs text-cyan-300 print-dark">${row.akurasiLvl2 || '-'}</td>
+            <td class="py-3.5 px-4 text-xs text-slate-400">${formatDateIndo(row.waktu)}</td>
+            <td class="no-print py-3.5 px-4 text-center">
+              <button onclick="openDetailModal(${idx})" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-slate-700 text-xs font-bold transition">
+                🔍 Bedah Jawaban
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Detail Jawaban HOTS & Aksi Nyata
+    function openDetailModal(index) {
+      const s = filteredRecords[index];
+      if (!s) return;
+
+      document.getElementById('modal-rank').textContent = s.predikat || 'Analis Muda';
+      document.getElementById('modal-name').textContent = s.nama || '-';
+      document.getElementById('modal-meta').textContent = `${s.kelas || '-'} • ${s.sekolah || '-'} • ${formatDateIndo(s.waktu)}`;
+      document.getElementById('modal-score').textContent = s.skor || 0;
+      document.getElementById('modal-lvl1').textContent = s.statusLvl1 || '-';
+      document.getElementById('modal-lvl2').textContent = s.akurasiLvl2 || '-';
+      document.getElementById('modal-critical').textContent = s.jawabanKritisLvl2 || '(Tidak ada jawaban)';
+      document.getElementById('modal-env-problem').textContent = s.masalahLvl3 || '-';
+      document.getElementById('modal-env-rec').textContent = s.rekomendasiLvl3 || '-';
+      document.getElementById('modal-env-arg').textContent = s.argumenLvl3 || '-';
+      document.getElementById('modal-reflection').textContent = s.refleksi || '-';
+
+      const modal = document.getElementById('detail-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDetailModal() {
+      const modal = document.getElementById('detail-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Ekspor data terfilter ke file CSV (bisa langsung dibuka di Excel)
+    function exportToCSV() {
+      if (filteredRecords.length === 0) return;
+
+      const headers = [
+        'Waktu Kirim', 'Nama Siswa', 'Kelas', 'Sekolah', 'Total Skor',
+        'Predikat Nalar', 'Status Level 1', 'Akurasi Level 2',
+        'Jawaban Kritis Level 2', 'Masalah Lingkungan (Lvl 3)',
+        'Rekomendasi Solusi (Lvl 3)', 'Argumen Logis (Lvl 3)', 'Refleksi'
+      ];
+
+      const escapeCSV = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+
+      const rows = filteredRecords.map(r => [
+        formatDateIndo(r.waktu), r.nama, r.kelas, r.sekolah, r.skor,
+        r.predikat, r.statusLvl1, r.akurasiLvl2,
+        r.jawabanKritisLvl2, r.masalahLvl3, r.rekomendasiLvl3, r.argumenLvl3, r.refleksi
+      ].map(escapeCSV).join(','));
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Rekap_Ekspedisi_Nalar_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = function() {
+      fetchSheetData();
+    };
+  </script>
+</body>
+</html>
